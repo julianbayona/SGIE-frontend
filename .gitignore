@@ -1,2 +1,5 @@
 node_modules
 other
+.env
+.env.local
+.env.*.local

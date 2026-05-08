@@ -174,6 +174,35 @@ http://localhost:5173
 
 ---
 
+## Despliegue en Vercel
+
+Este proyecto está listo para desplegarse como aplicación Vite en Vercel.
+
+### Configuración del proyecto
+
+| Campo en Vercel | Valor |
+|---|---|
+| Framework Preset | Vite |
+| Install Command | `npm ci` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+
+### Variables de entorno
+
+Configura esta variable en **Project Settings > Environment Variables**:
+
+| Variable | Descripción |
+|---|---|
+| `VITE_API_BASE_URL` | URL pública del backend sin `/api`. Ejemplo: `https://api.tudominio.com` |
+
+Para desarrollo local puedes crear un archivo `.env.local` tomando como referencia `.env.example`.
+
+### Rutas de la aplicación
+
+El archivo `vercel.json` redirige todas las rutas a `index.html` para que React Router funcione al abrir o refrescar URLs como `/events`, `/clients` o `/login`.
+
+---
+
 ## Sistema de diseño
 
 El archivo **`SGIE_DesignSystem_Master.html`** en la raíz del proyecto documenta la guía visual completa del sistema: paleta de colores, tipografía, componentes base y patrones de UI. Se recomienda consultarlo como referencia de consistencia visual durante el desarrollo.
