@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SGIE · Design System Master — Club Boyacá</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SGIE · DESIGN SYSTEM MASTER REFERENCE
+   Club Boyacá — v5.0 (Definitivo para agente Copilot)
+   ============================================================ */
+
+/* ────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS (CSS CUSTOM PROPERTIES)
+   ──────────────────────────────────────────────────────────── */
+:root {
+  /* ── Fondos y superficies ── */
+  --bg:            #F8F7F4;   /* Fondo base de toda la app */
+  --surface:       #FFFFFF;   /* Tarjetas, modales, paneles blancos */
+  --card:          #FFFFFF;   /* Alias para tarjetas */
+  --panel:         #F2F0EB;   /* Paneles secundarios, sidebars */
+  --hover:         #EDEAE3;   /* Estado hover de filas/listas */
+  --border:        #E0DAD0;   /* Borde suave (separadores, inputs idle) */
+  --border2:       #C8BFA8;   /* Borde énfasis (focus, componentes activos) */
+
+  /* ── Dorado · Color de marca ── */
+  --gold:          #A8841C;   /* Primario: CTAs, activo, acento UI */
+  --gold-l:        #C9A227;   /* Display: headers, logo, hover dorado */
+  --gold-d:        #7A5E10;   /* Pressed, bordes con énfasis fuerte */
+  --gold-bg:       rgba(168,132,28,0.07);   /* Fondo tint suave dorado */
+  --gold-bg2:      rgba(168,132,28,0.13);   /* Fondo tint medio dorado */
+
+  /* ── Texto ── */
+  --text1:         #1A1714;   /* Títulos, body principal */
+  --text2:         #4A4035;   /* Subtítulos, meta text */
+  --text3:         #8A7D68;   /* Hints, placeholders, muted */
+  --text4:         #B8AD9A;   /* Texto deshabilitado, micro-labels */
+
+  /* ── Colores semánticos ── */
+  --red:           #B83232;   /* Error, urgente, alerta */
+  --green:         #2D7D4F;   /* Activo, confirmación, éxito */
+  --blue:          #2358A0;   /* Info, directiva */
+  --red-bg:        rgba(184,50,50,0.07);
+  --green-bg:      rgba(45,125,79,0.07);
+  --blue-bg:       rgba(35,88,160,0.07);
+  --red-border:    rgba(184,50,50,0.25);
+  --green-border:  rgba(45,125,79,0.25);
+  --blue-border:   rgba(35,88,160,0.25);
+  --red-text:      #7A1A1A;
+  --green-text:    #1A5535;
+  --blue-text:     #103070;
+
+  /* ── Espaciado ── */
+  --space-xs:   0.25rem;  /* 4px  — separación mínima */
+  --space-sm:   0.5rem;   /* 8px  — gap entre ítems inline */
+  --space-md:   0.75rem;  /* 12px — padding cards compactas */
+  --space-lg:   1rem;     /* 16px — padding estándar */
+  --space-xl:   1.5rem;   /* 24px — separación entre bloques */
+  --space-2xl:  2rem;     /* 32px — padding de secciones */
+  --space-3xl:  3rem;     /* 48px — separación entre secciones grandes */
+
+  /* ── Border Radius ── */
+  --radius-xs:  2px;
+  --radius-sm:  4px;
+  --radius-md:  6px;
+  --radius-lg:  8px;
+  --radius-xl:  12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;  /* Pills, avatares circulares */
+
+  /* ── Tipografía — Font Families ── */
+  --font-display:     'EB Garamond', Georgia, serif;
+  --font-body:        'DM Sans', 'Manrope', sans-serif;
+  --font-ui:          'Manrope', 'DM Sans', sans-serif;
+  --font-mono:        'Menlo', 'Consolas', monospace;
+
+  /* ── Tipografía — Tamaños ── */
+  --text-display:  1.5rem;    /* 24px — Títulos hero, brand display */
+  --text-h1:       1.25rem;   /* 20px — Título de página */
+  --text-h2:       1rem;      /* 16px — Título de sección */
+  --text-h3:       0.875rem;  /* 14px — Subtítulo / card heading */
+  --text-body:     0.8125rem; /* 13px — Cuerpo de texto */
+  --text-small:    0.75rem;   /* 12px — Meta, auxiliary */
+  --text-xs:       0.6875rem; /* 11px — Chips, tags, timestamps */
+  --text-label:    0.625rem;  /* 10px — Labels uppercase, sec-titles */
+
+  /* ── Tipografía — Pesos ── */
+  --fw-light:      300;
+  --fw-regular:    400;
+  --fw-medium:     500;
+  --fw-semibold:   600;
+  --fw-bold:       700;
+
+  /* ── Tipografía — Altura de línea ── */
+  --lh-tight:    1.2;
+  --lh-snug:     1.4;
+  --lh-normal:   1.6;
+  --lh-relaxed:  1.75;
+
+  /* ── Tipografía — Letter Spacing ── */
+  --ls-tight:   -0.01em;
+  --ls-normal:   0;
+  --ls-wide:     0.05em;
+  --ls-wider:    0.08em;
+  --ls-widest:   0.14em;
+  --ls-label:    0.12em;   /* Para labels uppercase */
+  --ls-nav:      0.05em;   /* Para items de navegación */
+
+  /* ── Sombras ── */
+  --shadow-xs:  0 1px 2px rgba(26,23,20,0.06);
+  --shadow-sm:  0 2px 6px rgba(26,23,20,0.08);
+  --shadow-md:  0 4px 12px rgba(26,23,20,0.10);
+  --shadow-lg:  0 8px 24px rgba(26,23,20,0.12);
+  --shadow-xl:  0 16px 48px rgba(26,23,20,0.14);
+  --shadow-gold: 0 4px 16px rgba(168,132,28,0.20);
+
+  /* ── Transiciones ── */
+  --transition-fast:   80ms ease;
+  --transition-base:   150ms ease;
+  --transition-slow:   250ms ease;
+  --transition-xslow:  400ms ease;
+
+  /* ── Z-Index ── */
+  --z-base:      1;
+  --z-dropdown:  100;
+  --z-sticky:    200;
+  --z-modal:     300;
+  --z-toast:     400;
+  --z-tooltip:   500;
+
+  /* ── Dimensiones de componentes ── */
+  --height-input:   2.25rem;  /* 36px */
+  --height-btn-sm:  1.75rem;  /* 28px */
+  --height-btn-md:  2.25rem;  /* 36px */
+  --height-btn-lg:  2.75rem;  /* 44px */
+  --height-navbar:  2.875rem; /* 46px */
+  --height-sidebar: 100vh;
+
+  /* ── Layout ── */
+  --max-width-content:  680px;
+  --max-width-wide:     1200px;
+  --sidebar-width:      240px;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   2. RESET BASE
+   ──────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+}
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--text1);
+  background: var(--bg);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--font-ui); cursor: pointer; }
+input, select, textarea { font-family: var(--font-body); }
+
+
+/* ────────────────────────────────────────────────────────────
+   GUÍA VISUAL (estilos del documento)
+   ──────────────────────────────────────────────────────────── */
+.ds-page { max-width: 760px; margin: 0 auto; padding: var(--space-xl); }
+.ds-header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--gold-l);
+  padding: var(--space-2xl);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  display: flex; align-items: center; gap: var(--space-lg);
+  margin-bottom: 0;
+}
+.ds-logo {
+  width: 52px; height: 52px; border-radius: var(--radius-lg);
+  background: var(--gold-bg2); border: 1.5px solid var(--gold-l);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-style: italic;
+  font-size: 1.1rem; font-weight: var(--fw-bold); color: var(--gold);
+  flex-shrink: 0;
+}
+.ds-logo-text { flex: 1; }
+.ds-title { font-family: var(--font-display); font-style: italic; font-size: 1.4rem; font-weight: var(--fw-bold); color: var(--gold); }
+.ds-sub { font-size: var(--text-label); letter-spacing: var(--ls-widest); color: var(--text3); margin-top: var(--space-xs); text-transform: uppercase; }
+.ds-badge { background: var(--gold-bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: var(--space-xs) var(--space-sm); font-size: var(--text-label); color: var(--gold-d); letter-spacing: var(--ls-label); text-transform: uppercase; align-self: flex-start; white-space: nowrap; }
+
+.ds-section {
+  padding: var(--space-xl) var(--space-2xl);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.ds-section.alt { background: var(--bg); }
+.ds-section:last-child { border-bottom: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+
+.ds-wrap { background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: var(--space-xl); }
+
+.sec-title {
+  font-size: var(--text-label);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-widest);
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+.sec-note { font-size: var(--text-xs); color: var(--text4); margin-top: calc(-1 * var(--space-md)); margin-bottom: var(--space-md); font-style: italic; }
+.comp-lbl { font-size: var(--text-label); color: var(--gold-d); text-transform: uppercase; letter-spacing: var(--ls-label); margin-bottom: var(--space-sm); font-weight: var(--fw-bold); margin-top: var(--space-xl); }
+.comp-lbl:first-child { margin-top: 0; }
+
+/* Chips de color */
+.chip-row { display: flex; gap: var(--space-sm); margin-bottom: var(--space-sm); }
+.chip { flex: 1; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border); }
+.cp { height: 40px; }
+.ci { padding: var(--space-xs) var(--space-sm); background: var(--panel); }
+.cn { font-size: var(--text-xs); font-weight: var(--fw-semibold); color: var(--text1); }
+.ch { font-size: var(--text-label); color: var(--text3); font-family: var(--font-mono); }
+
+/* Swatches */
+.sw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); }
+.sw { border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border); }
+.sp { height: 52px; }
+.sb { padding: var(--space-sm) var(--space-md); background: var(--panel); }
+.sn { font-size: var(--text-small); font-weight: var(--fw-semibold); color: var(--text1); }
+.sx { font-size: var(--text-xs); color: var(--text3); font-family: var(--font-mono); }
+.su { font-size: var(--text-label); color: var(--text4); margin-top: 2px; font-style: italic; }
+
+/* Fila tipografía */
+.tr { display: flex; align-items: center; gap: var(--space-lg); padding: var(--space-md) var(--space-lg); background: var(--bg); border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: var(--space-xs); }
+.tm { min-width: 140px; }
+.tl { font-size: var(--text-label); color: var(--text4); text-transform: uppercase; letter-spacing: var(--ls-wide); }
+.ts { font-size: var(--text-label); color: var(--border2); font-family: var(--font-mono); margin-top: 2px; }
+
+/* Fila espaciado */
+.sr { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-xs); }
+.sb2 { height: 16px; background: var(--gold); opacity: 0.4; border-radius: var(--radius-xs); flex-shrink: 0; }
+.sl { font-size: var(--text-xs); color: var(--text2); min-width: 110px; font-family: var(--font-mono); }
+.sv { font-size: var(--text-label); color: var(--text4); }
+
+/* Border radius demo */
+.rr { display: flex; gap: var(--space-lg); align-items: flex-end; flex-wrap: wrap; }
+.rd { background: var(--gold-bg); border: 1.5px solid var(--gold-l); display: flex; align-items: center; justify-content: center; }
+.rl { font-size: var(--text-label); color: var(--text3); margin-top: var(--space-xs); text-align: center; }
+.rp { font-size: var(--text-label); color: var(--gold); text-align: center; font-family: var(--font-mono); }
+
+/* Sombras demo */
+.shadow-row { display: flex; gap: var(--space-lg); flex-wrap: wrap; margin-bottom: var(--space-sm); }
+.shadow-box { width: 80px; height: 56px; border-radius: var(--radius-md); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.shadow-lbl { font-size: var(--text-label); color: var(--text3); margin-top: var(--space-xs); text-align: center; }
+
+/* Token table */
+.token-table { width: 100%; border-collapse: collapse; font-size: var(--text-xs); margin-bottom: var(--space-md); }
+.token-table th { background: var(--panel); color: var(--text3); font-size: var(--text-label); letter-spacing: var(--ls-wide); text-transform: uppercase; padding: var(--space-xs) var(--space-md); text-align: left; border-bottom: 1px solid var(--border); font-weight: var(--fw-bold); }
+.token-table td { padding: var(--space-xs) var(--space-md); border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
+.token-table tr:last-child td { border-bottom: none; }
+.token-table td:first-child { font-family: var(--font-mono); font-size: var(--text-label); color: var(--gold-d); }
+.token-table td:nth-child(2) { font-family: var(--font-mono); color: var(--text3); }
+
+
+/* ════════════════════════════════════════════════════════════
+   COMPONENTES REALES DEL SISTEMA
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Navbar ── */
+.c-navbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: var(--height-navbar);
+  padding: 0 var(--space-lg);
+  display: flex; align-items: center;
+  gap: 0;
+}
+.c-nav-brand {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.9375rem;
+  color: var(--gold);
+  margin-right: var(--space-xl);
+  flex-shrink: 0;
+}
+.c-nav-item {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text3);
+  padding: 0 var(--space-md);
+  height: var(--height-navbar);
+  display: flex; align-items: center;
+  letter-spacing: var(--ls-nav);
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-base), border-color var(--transition-base);
+  cursor: pointer;
+}
+.c-nav-item:hover { color: var(--text2); }
+.c-nav-item.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+
+/* ── Botones ── */
+.c-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--space-xs);
+  height: var(--height-btn-md);
+  padding: 0 var(--space-lg);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-base), color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+  white-space: nowrap;
+}
+/* Primary */
+.c-btn-primary { background: var(--gold); color: #fff; }
+.c-btn-primary:hover { background: var(--gold-l); box-shadow: var(--shadow-gold); }
+.c-btn-primary:active { background: var(--gold-d); }
+/* Secondary (outline gold) */
+.c-btn-secondary { background: transparent; border: 1.5px solid var(--gold-l); color: var(--gold); }
+.c-btn-secondary:hover { background: var(--gold-bg); }
+.c-btn-secondary:active { background: var(--gold-bg2); }
+/* Ghost (neutro) */
+.c-btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text3); }
+.c-btn-ghost:hover { background: var(--hover); color: var(--text2); }
+/* Danger */
+.c-btn-danger { background: var(--red); color: #fff; }
+.c-btn-danger:hover { background: #9A2828; }
+/* Small */
+.c-btn-sm { height: var(--height-btn-sm); padding: 0 var(--space-md); font-size: var(--text-label); }
+/* Large */
+.c-btn-lg { height: var(--height-btn-lg); padding: 0 var(--space-xl); font-size: var(--text-small); }
+/* Disabled */
+.c-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Inputs ── */
+.c-input {
+  width: 100%;
+  height: var(--height-input);
+  padding: 0 var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--text1);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  outline: none;
+}
+.c-input::placeholder { color: var(--text4); }
+.c-input:hover { border-color: var(--border2); }
+.c-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-bg); }
+.c-input.error { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-bg); }
+.c-input.success { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-bg); }
+.c-input:disabled { background: var(--panel); color: var(--text4); cursor: not-allowed; }
+
+.c-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--text1);
+  resize: vertical;
+  outline: none;
+  transition: border-color var(--transition-base);
+}
+.c-textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-bg); }
+
+.c-select {
+  width: 100%;
+  height: var(--height-input);
+  padding: 0 var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--text1);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-base);
+}
+.c-select:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-bg); }
+
+.c-label {
+  display: block;
+  font-size: var(--text-label);
+  font-weight: var(--fw-bold);
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-label);
+  margin-bottom: var(--space-xs);
+}
+.c-field { margin-bottom: var(--space-lg); }
+.c-helper { font-size: var(--text-label); color: var(--text4); margin-top: var(--space-xs); }
+.c-helper.error { color: var(--red); }
+.c-helper.success { color: var(--green); }
+
+/* ── Cards ── */
+.c-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+}
+.c-card:hover { box-shadow: var(--shadow-md); border-color: var(--border2); }
+.c-card-title { font-size: var(--text-h3); font-weight: var(--fw-semibold); color: var(--text1); margin-bottom: var(--space-xs); }
+.c-card-meta  { font-size: var(--text-xs); color: var(--text3); margin-bottom: var(--space-md); }
+
+/* ── Tarjeta de evento ── */
+.c-event {
+  border-left: 3px solid;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.c-event-time { font-size: var(--text-label); font-family: var(--font-mono); color: var(--text4); margin-bottom: 2px; }
+.c-event-name { font-size: var(--text-body); font-weight: var(--fw-semibold); line-height: var(--lh-snug); }
+.c-event-loc  { font-size: var(--text-xs); margin-top: 2px; opacity: 0.7; }
+.c-event-gold  { border-color: var(--gold-l);  background: var(--gold-bg);  color: var(--text1); }
+.c-event-green { border-color: var(--green);   background: var(--green-bg); color: var(--green-text); }
+.c-event-red   { border-color: var(--red);     background: var(--red-bg);   color: var(--red-text); }
+.c-event-blue  { border-color: var(--blue);    background: var(--blue-bg);  color: var(--blue-text); }
+
+/* ── Tags / Chips ── */
+.c-tag {
+  display: inline-flex; align-items: center; gap: var(--space-xs);
+  font-size: var(--text-xs); font-weight: var(--fw-semibold);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+}
+.c-tag-dot { width: 7px; height: 7px; border-radius: var(--radius-xs); flex-shrink: 0; }
+
+/* ── Pipeline / Badges de estado ── */
+.c-badge {
+  display: inline-flex; align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-label);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+  border: 1px solid;
+}
+.c-badge-gold   { background: var(--gold-bg);  color: var(--gold-d);    border-color: var(--border2); }
+.c-badge-green  { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+.c-badge-red    { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red-border); }
+.c-badge-blue   { background: var(--blue-bg);  color: var(--blue-text);  border-color: var(--blue-border); }
+.c-badge-neutral{ background: var(--panel);    color: var(--text3);      border-color: var(--border); }
+
+/* ── Avatar ── */
+.c-avatar {
+  width: 38px; height: 38px;
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--text-small);
+  font-weight: var(--fw-bold);
+  flex-shrink: 0;
+  border: 1.5px solid var(--gold-l);
+  background: var(--gold-bg2);
+  color: var(--gold);
+}
+.c-avatar-lg { width: 48px; height: 48px; font-size: var(--text-body); }
+.c-avatar-sm { width: 28px; height: 28px; font-size: var(--text-label); }
+
+/* ── Socio row ── */
+.c-member { display: flex; align-items: center; gap: var(--space-md); }
+.c-member-name { font-family: var(--font-display); font-size: var(--text-body); font-weight: var(--fw-semibold); color: var(--text1); }
+.c-member-meta { font-size: var(--text-xs); color: var(--text3); }
+
+/* ── Mini Calendario ── */
+.c-cal-day {
+  width: 30px; height: 30px;
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--text-xs); font-weight: var(--fw-medium);
+  cursor: pointer; transition: background var(--transition-fast);
+}
+.c-cal-day-today   { background: var(--gold); color: #fff; }
+.c-cal-day-other   { color: var(--text4); }
+.c-cal-day-normal  { color: var(--text2); }
+.c-cal-day-normal:hover { background: var(--hover); }
+.c-cal-day-has-event { position: relative; color: var(--gold); font-weight: var(--fw-bold); }
+
+/* ── Separadores ── */
+.c-divider { width: 100%; height: 1px; background: var(--border); margin: var(--space-xl) 0; }
+.c-divider-gold { display: flex; align-items: center; gap: var(--space-sm); margin: var(--space-xl) 0; }
+.c-divider-gold-line { flex: 1; height: 1px; background: var(--border2); opacity: 0.6; }
+.c-divider-gold-gem  { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+.c-divider-section   { width: 100%; height: 1px; background: var(--gold-bg2); border: none; margin: var(--space-2xl) 0; }
+
+/* ── Table ── */
+.c-table { width: 100%; border-collapse: collapse; }
+.c-table th {
+  background: var(--panel);
+  font-size: var(--text-label);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: var(--space-sm) var(--space-md);
+  text-align: left;
+  border-bottom: 1px solid var(--border2);
+}
+.c-table td {
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-body);
+  color: var(--text2);
+}
+.c-table tr:last-child td { border-bottom: none; }
+.c-table tr:hover td { background: var(--hover); }
+
+/* ── Toast / Notificación ── */
+.c-toast {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid;
+  box-shadow: var(--shadow-md);
+  font-size: var(--text-body);
+  max-width: 360px;
+}
+.c-toast-success { background: var(--surface); border-color: var(--green); color: var(--green-text); }
+.c-toast-error   { background: var(--surface); border-color: var(--red);   color: var(--red-text); }
+.c-toast-info    { background: var(--surface); border-color: var(--blue);  color: var(--blue-text); }
+.c-toast-gold    { background: var(--gold-bg2); border-color: var(--gold); color: var(--gold-d); }
+
+/* ── Modal ── */
+.c-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,23,20,0.45);
+  z-index: var(--z-modal);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-lg);
+}
+.c-modal {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%; max-width: 480px;
+  padding: var(--space-2xl);
+}
+.c-modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--space-lg); }
+.c-modal-title  { font-family: var(--font-display); font-style: italic; font-size: var(--text-h2); color: var(--text1); }
+.c-modal-footer { display: flex; justify-content: flex-end; gap: var(--space-sm); margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--border); }
+
+/* ── Sidebar layout ── */
+.c-layout { display: flex; min-height: 100vh; }
+.c-sidebar { width: var(--sidebar-width); background: var(--surface); border-right: 1px solid var(--border); flex-shrink: 0; padding: var(--space-lg) 0; }
+.c-sidebar-item {
+  padding: var(--space-sm) var(--space-xl);
+  font-size: var(--text-xs); font-family: var(--font-ui);
+  color: var(--text3); text-transform: uppercase;
+  letter-spacing: var(--ls-nav);
+  cursor: pointer; border-left: 2px solid transparent;
+  transition: color var(--transition-base), background var(--transition-base);
+}
+.c-sidebar-item:hover { background: var(--hover); color: var(--text2); }
+.c-sidebar-item.active { color: var(--gold); border-left: 2px solid var(--gold); background: var(--gold-bg); font-weight: var(--fw-bold); }
+.c-main { flex: 1; padding: var(--space-2xl); overflow-y: auto; }
+
+/* ── Page Header ── */
+.c-page-header { margin-bottom: var(--space-xl); }
+.c-page-eyebrow { font-size: var(--text-label); font-weight: var(--fw-bold); color: var(--gold); text-transform: uppercase; letter-spacing: var(--ls-widest); margin-bottom: var(--space-xs); }
+.c-page-title   { font-family: var(--font-display); font-style: italic; font-size: var(--text-h1); font-weight: var(--fw-semibold); color: var(--text1); }
+.c-page-sub     { font-size: var(--text-small); color: var(--text3); margin-top: var(--space-xs); }
+
+/* ── Checkbox & Radio ── */
+.c-checkbox-wrap, .c-radio-wrap { display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; }
+.c-checkbox, .c-radio {
+  width: 16px; height: 16px; flex-shrink: 0;
+  border: 1.5px solid var(--border2); border-radius: var(--radius-xs);
+  background: var(--surface); cursor: pointer;
+  accent-color: var(--gold);
+}
+.c-radio { border-radius: var(--radius-full); }
+.c-checkbox-label, .c-radio-label { font-size: var(--text-body); color: var(--text2); }
+
+/* ── Tooltip ── */
+.c-tooltip-wrap { position: relative; display: inline-flex; }
+.c-tooltip {
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--text1); color: #fff;
+  font-size: var(--text-label); padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm); white-space: nowrap;
+  pointer-events: none; z-index: var(--z-tooltip);
+}
+
+/* ── Breadcrumb ── */
+.c-breadcrumb { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--text-xs); color: var(--text3); }
+.c-breadcrumb-sep { color: var(--border2); }
+.c-breadcrumb-current { color: var(--text1); font-weight: var(--fw-medium); }
+
+/* ── Stat card (dashboard) ── */
+.c-stat {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: var(--space-lg);
+}
+.c-stat-label { font-size: var(--text-label); color: var(--text3); text-transform: uppercase; letter-spacing: var(--ls-label); font-weight: var(--fw-bold); }
+.c-stat-value { font-family: var(--font-display); font-size: 1.75rem; font-weight: var(--fw-bold); color: var(--text1); margin: var(--space-xs) 0; }
+.c-stat-delta { font-size: var(--text-xs); }
+.c-stat-delta.up   { color: var(--green); }
+.c-stat-delta.down { color: var(--red); }
+
+/* ── Empty state ── */
+.c-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-3xl) var(--space-2xl); text-align: center; }
+.c-empty-icon { font-size: 2rem; margin-bottom: var(--space-md); opacity: 0.3; }
+.c-empty-title { font-size: var(--text-h3); font-weight: var(--fw-semibold); color: var(--text2); margin-bottom: var(--space-xs); }
+.c-empty-sub   { font-size: var(--text-small); color: var(--text4); }
+
+/* ── Progress / Step indicator ── */
+.c-step { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--text-xs); color: var(--text3); }
+.c-step-dot { width: 24px; height: 24px; border-radius: var(--radius-full); border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: var(--text-label); font-weight: var(--fw-bold); flex-shrink: 0; }
+.c-step-dot.active  { background: var(--gold); border-color: var(--gold); color: #fff; }
+.c-step-dot.done    { background: var(--green); border-color: var(--green); color: #fff; }
+.c-step-line { flex: 1; height: 1px; background: var(--border); }
+
+
+/* ════════════════════════════════════════════════════════════
+   UTILIDADES DE LAYOUT
+   ════════════════════════════════════════════════════════════ */
+.flex         { display: flex; }
+.flex-col     { display: flex; flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-xs { gap: var(--space-xs); }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+.gap-xl { gap: var(--space-xl); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); }
+
+/* Padding */
+.p-sm  { padding: var(--space-sm); }
+.p-md  { padding: var(--space-md); }
+.p-lg  { padding: var(--space-lg); }
+.p-xl  { padding: var(--space-xl); }
+.px-md { padding-left: var(--space-md); padding-right: var(--space-md); }
+.px-lg { padding-left: var(--space-lg); padding-right: var(--space-lg); }
+.py-sm { padding-top: var(--space-sm); padding-bottom: var(--space-sm); }
+.py-md { padding-top: var(--space-md); padding-bottom: var(--space-md); }
+
+/* Margin */
+.mt-xs { margin-top: var(--space-xs); }
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+
+/* Texto */
+.text-gold   { color: var(--gold); }
+.text-muted  { color: var(--text3); }
+.text-danger { color: var(--red); }
+.text-success{ color: var(--green); }
+.font-display{ font-family: var(--font-display); font-style: italic; }
+.font-mono   { font-family: var(--font-mono); }
+.uppercase   { text-transform: uppercase; letter-spacing: var(--ls-label); }
+.truncate    { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+/* ════════════════════════════════════════════════════════════
+   GUÍA DOCUMENTO: ESTILOS PROPIOS DEL MANUAL
+   ════════════════════════════════════════════════════════════ */
+body { padding: var(--space-xl); background: #EDE9E0; }
+.t-display{ font-family:var(--font-display);font-style:italic;font-size:var(--text-display);font-weight:var(--fw-bold);color:var(--gold); }
+.t-h1     { font-size:var(--text-h1);font-weight:var(--fw-semibold);color:var(--text1); }
+.t-h2     { font-size:var(--text-h2);font-weight:var(--fw-semibold);color:var(--text1); }
+.t-h3     { font-size:var(--text-h3);font-weight:var(--fw-medium);color:var(--text2); }
+.t-body   { font-size:var(--text-body);color:var(--text2);line-height:var(--lh-normal); }
+.t-small  { font-size:var(--text-small);color:var(--text3); }
+.t-label  { font-size:var(--text-label);font-weight:var(--fw-bold);color:var(--gold);text-transform:uppercase;letter-spacing:var(--ls-label); }
+</style>
+</head>
+<body>
+<div class="ds-page">
+<div class="ds-wrap">
+
+  <!-- HEADER -->
+  <div class="ds-header">
+    <div class="ds-logo">CB</div>
+    <div class="ds-logo-text">
+      <div class="ds-title">Club Boyacá — SGIE</div>
+      <div class="ds-sub">Sistema de Gestión de Instalaciones y Eventos · Design System</div>
+    </div>
+    <div class="ds-badge">v5 · Definitivo</div>
+  </div>
+
+  <!-- ── 01 FONDOS ── -->
+  <div class="ds-section alt">
+    <div class="sec-title">01 · Fondos y superficies</div>
+    <div class="sec-note">Base blanca cálida, no fría. El dorado respira sobre estos fondos sin competir.</div>
+    <div class="chip-row">
+      <div class="chip"><div class="cp" style="background:#FFFFFF;border-bottom:1px solid #E0DAD0"></div><div class="ci"><div class="cn">--surface / --card</div><div class="ch">#FFFFFF</div></div></div>
+      <div class="chip"><div class="cp" style="background:#F8F7F4"></div><div class="ci"><div class="cn">--bg</div><div class="ch">#F8F7F4</div></div></div>
+      <div class="chip"><div class="cp" style="background:#F2F0EB"></div><div class="ci"><div class="cn">--panel</div><div class="ch">#F2F0EB</div></div></div>
+      <div class="chip"><div class="cp" style="background:#EDEAE3"></div><div class="ci"><div class="cn">--hover</div><div class="ch">#EDEAE3</div></div></div>
+    </div>
+    <div class="chip-row">
+      <div class="chip"><div class="cp" style="background:#E0DAD0"></div><div class="ci"><div class="cn">--border</div><div class="ch">#E0DAD0</div></div></div>
+      <div class="chip"><div class="cp" style="background:#C8BFA8"></div><div class="ci"><div class="cn">--border2</div><div class="ch">#C8BFA8</div></div></div>
+      <div class="chip"><div class="cp" style="background:rgba(168,132,28,0.07)"></div><div class="ci"><div class="cn">--gold-bg</div><div class="ch">gold 7%</div></div></div>
+      <div class="chip"><div class="cp" style="background:rgba(168,132,28,0.13)"></div><div class="ci"><div class="cn">--gold-bg2</div><div class="ch">gold 13%</div></div></div>
+    </div>
+  </div>
+
+  <!-- ── 02 DORADO ── -->
+  <div class="ds-section">
+    <div class="sec-title">02 · Paleta dorada · Color de marca</div>
+    <div class="sw-grid">
+      <div class="sw"><div class="sp" style="background:#A8841C"></div><div class="sb"><div class="sn">--gold</div><div class="sx">#A8841C</div><div class="su">CTA, activo, acento UI</div></div></div>
+      <div class="sw"><div class="sp" style="background:#C9A227"></div><div class="sb"><div class="sn">--gold-l</div><div class="sx">#C9A227</div><div class="su">Display, hover, logo</div></div></div>
+      <div class="sw"><div class="sp" style="background:#7A5E10"></div><div class="sb"><div class="sn">--gold-d</div><div class="sx">#7A5E10</div><div class="su">Pressed, bordes énfasis</div></div></div>
+      <div class="sw"><div class="sp" style="background:#1A1714"></div><div class="sb"><div class="sn">--text1</div><div class="sx">#1A1714</div><div class="su">Títulos, body</div></div></div>
+      <div class="sw"><div class="sp" style="background:#4A4035"></div><div class="sb"><div class="sn">--text2</div><div class="sx">#4A4035</div><div class="su">Subtítulos, meta</div></div></div>
+      <div class="sw"><div class="sp" style="background:#8A7D68"></div><div class="sb"><div class="sn">--text3</div><div class="sx">#8A7D68</div><div class="su">Hints, placeholders</div></div></div>
+    </div>
+  </div>
+
+  <!-- ── 03 SEMÁNTICOS ── -->
+  <div class="ds-section alt">
+    <div class="sec-title">03 · Colores semánticos</div>
+    <div class="sw-grid">
+      <div class="sw"><div class="sp" style="background:#B83232"></div><div class="sb"><div class="sn">--red</div><div class="sx">#B83232</div><div class="su">Error, urgente, alerta</div></div></div>
+      <div class="sw"><div class="sp" style="background:#2D7D4F"></div><div class="sb"><div class="sn">--green</div><div class="sx">#2D7D4F</div><div class="su">Activo, confirmación</div></div></div>
+      <div class="sw"><div class="sp" style="background:#2358A0"></div><div class="sb"><div class="sn">--blue</div><div class="sx">#2358A0</div><div class="su">Info, directiva</div></div></div>
+    </div>
+  </div>
+
+  <!-- ── 04 TIPOGRAFÍA ── -->
+  <div class="ds-section">
+    <div class="sec-title">04 · Tipografía</div>
+    <div class="tr"><div class="tm"><div class="tl">Display · Brand</div><div class="ts">--text-display · 1.5rem / 24px · 700 · EB Garamond italic</div></div><div style="flex:1"><span class="t-display">Club Boyacá</span></div></div>
+    <div class="tr"><div class="tm"><div class="tl">H1 · Página</div><div class="ts">--text-h1 · 1.25rem / 20px · 600 · DM Sans</div></div><div style="flex:1"><span class="t-h1">Instalaciones del Club</span></div></div>
+    <div class="tr"><div class="tm"><div class="tl">H2 · Sección</div><div class="ts">--text-h2 · 1rem / 16px · 600 · DM Sans</div></div><div style="flex:1"><span class="t-h2">Próximos Eventos</span></div></div>
+    <div class="tr"><div class="tm"><div class="tl">H3 · Subtítulo</div><div class="ts">--text-h3 · 0.875rem / 14px · 500 · DM Sans</div></div><div style="flex:1"><span class="t-h3">Reserva de Instalaciones</span></div></div>
+    <div class="tr"><div class="tm"><div class="tl">Body</div><div class="ts">--text-body · 0.8125rem / 13px · 400 · lh 1.6</div></div><div style="flex:1"><span class="t-body">Bienvenido al sistema de gestión del Club Boyacá.</span></div></div>
+    <div class="tr"><div class="tm"><div class="tl">Small / meta</div><div class="ts">--text-small · 0.75rem / 12px · 400</div></div><div style="flex:1"><span class="t-small">Socio activo · Categoría Platinum</span></div></div>
+    <div class="tr"><div class="tm"><div class="tl">XS / chips</div><div class="ts">--text-xs · 0.6875rem / 11px · 400</div></div><div style="flex:1"><span style="font-size:0.6875rem;color:var(--text3)">09:00 – 12:00 · Salón Principal</span></div></div>
+    <div class="tr"><div class="tm"><div class="tl">Label / uppercase</div><div class="ts">--text-label · 0.625rem / 10px · 700 · ls 0.12em</div></div><div style="flex:1"><span class="t-label">Agenda · Reservas · Socios</span></div></div>
+  </div>
+
+  <!-- ── 05 ESPACIADO ── -->
+  <div class="ds-section alt">
+    <div class="sec-title">05 · Espaciado (rem + px)</div>
+    <div class="sr"><div class="sl">--space-xs · 0.25rem</div><div class="sb2" style="width:4px"></div><div class="sv">4px — separación mínima (icon gap, micro-offset)</div></div>
+    <div class="sr"><div class="sl">--space-sm · 0.5rem</div><div class="sb2" style="width:8px"></div><div class="sv">8px — gap entre ítems inline, stacks compactos</div></div>
+    <div class="sr"><div class="sl">--space-md · 0.75rem</div><div class="sb2" style="width:12px"></div><div class="sv">12px — padding cards compactas, listas</div></div>
+    <div class="sr"><div class="sl">--space-lg · 1rem</div><div class="sb2" style="width:16px"></div><div class="sv">16px — padding estándar de componentes</div></div>
+    <div class="sr"><div class="sl">--space-xl · 1.5rem</div><div class="sb2" style="width:24px"></div><div class="sv">24px — separación entre bloques/grupos</div></div>
+    <div class="sr"><div class="sl">--space-2xl · 2rem</div><div class="sb2" style="width:32px"></div><div class="sv">32px — padding de secciones, paneles</div></div>
+    <div class="sr"><div class="sl">--space-3xl · 3rem</div><div class="sb2" style="width:48px"></div><div class="sv">48px — separación entre secciones grandes</div></div>
+  </div>
+
+  <!-- ── 06 BORDER RADIUS ── -->
+  <div class="ds-section">
+    <div class="sec-title">06 · Border Radius</div>
+    <div class="rr">
+      <div><div class="rd" style="border-radius:2px;width:36px;height:36px"></div><div class="rl">--radius-xs</div><div class="rp">2px</div></div>
+      <div><div class="rd" style="border-radius:4px;width:44px;height:44px"></div><div class="rl">--radius-sm</div><div class="rp">4px</div></div>
+      <div><div class="rd" style="border-radius:6px;width:52px;height:52px"></div><div class="rl">--radius-md</div><div class="rp">6px</div></div>
+      <div><div class="rd" style="border-radius:8px;width:60px;height:60px"></div><div class="rl">--radius-lg</div><div class="rp">8px</div></div>
+      <div><div class="rd" style="border-radius:12px;width:66px;height:66px"></div><div class="rl">--radius-xl</div><div class="rp">12px</div></div>
+      <div><div class="rd" style="border-radius:16px;width:72px;height:72px"></div><div class="rl">--radius-2xl</div><div class="rp">16px</div></div>
+      <div><div class="rd" style="border-radius:9999px;width:44px;height:44px"></div><div class="rl">--radius-full</div><div class="rp">50%</div></div>
+    </div>
+  </div>
+
+  <!-- ── 07 SOMBRAS ── -->
+  <div class="ds-section alt">
+    <div class="sec-title">07 · Sombras</div>
+    <div class="shadow-row">
+      <div><div class="shadow-box" style="box-shadow:0 1px 2px rgba(26,23,20,0.06)"><span style="font-size:0.6rem;color:var(--text4)">xs</span></div><div class="shadow-lbl">--shadow-xs<br><span style="font-family:monospace;color:var(--text4);font-size:0.55rem">idle, sutil</span></div></div>
+      <div><div class="shadow-box" style="box-shadow:0 2px 6px rgba(26,23,20,0.08)"><span style="font-size:0.6rem;color:var(--text4)">sm</span></div><div class="shadow-lbl">--shadow-sm<br><span style="font-family:monospace;color:var(--text4);font-size:0.55rem">cards</span></div></div>
+      <div><div class="shadow-box" style="box-shadow:0 4px 12px rgba(26,23,20,0.10)"><span style="font-size:0.6rem;color:var(--text4)">md</span></div><div class="shadow-lbl">--shadow-md<br><span style="font-family:monospace;color:var(--text4);font-size:0.55rem">hover, toast</span></div></div>
+      <div><div class="shadow-box" style="box-shadow:0 8px 24px rgba(26,23,20,0.12)"><span style="font-size:0.6rem;color:var(--text4)">lg</span></div><div class="shadow-lbl">--shadow-lg<br><span style="font-family:monospace;color:var(--text4);font-size:0.55rem">dropdown</span></div></div>
+      <div><div class="shadow-box" style="box-shadow:0 16px 48px rgba(26,23,20,0.14)"><span style="font-size:0.6rem;color:var(--text4)">xl</span></div><div class="shadow-lbl">--shadow-xl<br><span style="font-family:monospace;color:var(--text4);font-size:0.55rem">modal</span></div></div>
+      <div><div class="shadow-box" style="box-shadow:0 4px 16px rgba(168,132,28,0.20);border:1.5px solid var(--gold-l)"><span style="font-size:0.6rem;color:var(--gold)">✦</span></div><div class="shadow-lbl">--shadow-gold<br><span style="font-family:monospace;color:var(--text4);font-size:0.55rem">CTA hover</span></div></div>
+    </div>
+  </div>
+
+  <!-- ── 08 TRANSICIONES & Z-INDEX ── -->
+  <div class="ds-section">
+    <div class="sec-title">08 · Transiciones & Z-Index</div>
+    <table class="token-table">
+      <thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td>--transition-fast</td><td>80ms ease</td><td>Hover de color, background rápido</td></tr>
+        <tr><td>--transition-base</td><td>150ms ease</td><td>Default: border, shadow, color</td></tr>
+        <tr><td>--transition-slow</td><td>250ms ease</td><td>Panel slide, sidebar collapse</td></tr>
+        <tr><td>--transition-xslow</td><td>400ms ease</td><td>Modal open/close, page transition</td></tr>
+      </tbody>
+    </table>
+    <table class="token-table">
+      <thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td>--z-base</td><td>1</td><td>Elementos base</td></tr>
+        <tr><td>--z-dropdown</td><td>100</td><td>Dropdowns, selects</td></tr>
+        <tr><td>--z-sticky</td><td>200</td><td>Navbar sticky, headers fijos</td></tr>
+        <tr><td>--z-modal</td><td>300</td><td>Modales, overlays</td></tr>
+        <tr><td>--z-toast</td><td>400</td><td>Toast / notificaciones</td></tr>
+        <tr><td>--z-tooltip</td><td>500</td><td>Tooltips (siempre encima)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 09 DIMENSIONES ── -->
+  <div class="ds-section alt">
+    <div class="sec-title">09 · Dimensiones de componentes</div>
+    <table class="token-table">
+      <thead><tr><th>Token</th><th>rem</th><th>px</th><th>Componente</th></tr></thead>
+      <tbody>
+        <tr><td>--height-btn-sm</td><td>1.75rem</td><td>28px</td><td>Botón pequeño (acciones en tabla)</td></tr>
+        <tr><td>--height-btn-md</td><td>2.25rem</td><td>36px</td><td>Botón estándar</td></tr>
+        <tr><td>--height-btn-lg</td><td>2.75rem</td><td>44px</td><td>Botón CTA destacado</td></tr>
+        <tr><td>--height-input</td><td>2.25rem</td><td>36px</td><td>Input, Select</td></tr>
+        <tr><td>--height-navbar</td><td>2.875rem</td><td>46px</td><td>Barra de navegación</td></tr>
+        <tr><td>--sidebar-width</td><td>15rem</td><td>240px</td><td>Sidebar lateral</td></tr>
+        <tr><td>--max-width-content</td><td>42.5rem</td><td>680px</td><td>Contenido central max-width</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 10 COMPONENTES ── -->
+  <div class="ds-section">
+    <div class="sec-title">10 · Componentes</div>
+
+    <div class="comp-lbl">Navbar</div>
+    <div style="border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-xl)">
+      <div class="c-navbar">
+        <span class="c-nav-brand">Club Boyacá</span>
+        <span class="c-nav-item active">Agenda</span>
+        <span class="c-nav-item">Socios</span>
+        <span class="c-nav-item">Reservas</span>
+        <span class="c-nav-item">Eventos</span>
+      </div>
+    </div>
+
+    <div class="comp-lbl">Botones</div>
+    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-xl)">
+      <button class="c-btn c-btn-primary">Reservar Ahora</button>
+      <button class="c-btn c-btn-secondary">Ver Detalles</button>
+      <button class="c-btn c-btn-ghost">Cancelar</button>
+      <button class="c-btn c-btn-danger">Eliminar</button>
+      <button class="c-btn c-btn-primary c-btn-sm">Añadir</button>
+      <button class="c-btn c-btn-primary c-btn-lg">Confirmar Reserva</button>
+      <button class="c-btn c-btn-primary" disabled>Deshabilitado</button>
+    </div>
+
+    <div class="comp-lbl">Inputs y campos</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-xl)">
+      <div class="c-field">
+        <label class="c-label">Nombre del evento</label>
+        <input class="c-input" type="text" placeholder="Ej: Asamblea General…">
+        <div class="c-helper">Ingresa el nombre completo del evento.</div>
+      </div>
+      <div class="c-field">
+        <label class="c-label">Salón</label>
+        <select class="c-select"><option>Salón Principal</option><option>Salón de Honor</option></select>
+      </div>
+      <div class="c-field">
+        <label class="c-label">Con error</label>
+        <input class="c-input error" type="text" value="fecha inválida">
+        <div class="c-helper error">La fecha seleccionada no está disponible.</div>
+      </div>
+      <div class="c-field">
+        <label class="c-label">Completado</label>
+        <input class="c-input success" type="text" value="socios@clubboyaca.co">
+      </div>
+    </div>
+
+    <div class="comp-lbl">Tarjetas de evento</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);margin-bottom:var(--space-xl)">
+      <div class="c-event c-event-gold"><div class="c-event-time">09:00 – 12:00</div><div class="c-event-name">Asamblea General</div><div class="c-event-loc">Salón Principal</div></div>
+      <div class="c-event c-event-green"><div class="c-event-time">15:00 – 18:00</div><div class="c-event-name">Torneo de Tenis</div><div class="c-event-loc">Cancha norte</div></div>
+      <div class="c-event c-event-red"><div class="c-event-time">20:00 – 23:00</div><div class="c-event-name">Cena de Gala</div><div class="c-event-loc">Salón de honor</div></div>
+      <div class="c-event c-event-blue"><div class="c-event-time">07:00 – 09:00</div><div class="c-event-name">Reunión Directiva</div><div class="c-event-loc">Sala de juntas</div></div>
+    </div>
+
+    <div class="comp-lbl">Badges de estado</div>
+    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-xl)">
+      <span class="c-badge c-badge-neutral">Prospecto</span>
+      <span class="c-badge c-badge-gold">Contactado</span>
+      <span class="c-badge c-badge-green">Activo</span>
+      <span class="c-badge c-badge-blue">Platinum</span>
+      <span class="c-badge c-badge-red">Inactivo</span>
+    </div>
+
+    <div class="comp-lbl">Tags / Categorías</div>
+    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-xl)">
+      <div class="c-tag" style="background:var(--gold-bg);color:var(--gold-d)"><div class="c-tag-dot" style="background:var(--gold)"></div>Eventos</div>
+      <div class="c-tag" style="background:var(--green-bg);color:var(--green-text)"><div class="c-tag-dot" style="background:var(--green)"></div>Deportes</div>
+      <div class="c-tag" style="background:var(--red-bg);color:var(--red-text)"><div class="c-tag-dot" style="background:var(--red)"></div>Urgente</div>
+      <div class="c-tag" style="background:var(--blue-bg);color:var(--blue-text)"><div class="c-tag-dot" style="background:var(--blue)"></div>Directiva</div>
+    </div>
+
+    <div class="comp-lbl">Avatares & socio</div>
+    <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-xl)">
+      <div class="c-avatar c-avatar-sm">FG</div>
+      <div class="c-avatar">FG</div>
+      <div class="c-avatar c-avatar-lg">FG</div>
+      <div style="width:1px;height:40px;background:var(--border);margin:0 var(--space-xs)"></div>
+      <div class="c-member">
+        <div class="c-avatar">FG</div>
+        <div><div class="c-member-name">Frank Goodman</div><div class="c-member-meta">Socio activo · Categoría Platinum</div></div>
+      </div>
+    </div>
+
+    <div class="comp-lbl">Mini calendario</div>
+    <div style="display:flex;gap:var(--space-xs);margin-bottom:var(--space-xl)">
+      <div class="c-cal-day c-cal-day-other">28</div>
+      <div class="c-cal-day c-cal-day-normal">5</div>
+      <div class="c-cal-day c-cal-day-normal">6</div>
+      <div class="c-cal-day c-cal-day-has-event">7</div>
+      <div class="c-cal-day c-cal-day-normal">8</div>
+      <div class="c-cal-day c-cal-day-today">9</div>
+      <div class="c-cal-day c-cal-day-normal">10</div>
+    </div>
+
+    <div class="comp-lbl">Toast / Notificaciones</div>
+    <div style="display:flex;flex-direction:column;gap:var(--space-sm);margin-bottom:var(--space-xl)">
+      <div class="c-toast c-toast-success">✓ Reserva confirmada exitosamente.</div>
+      <div class="c-toast c-toast-error">✕ Error al procesar el pago. Intenta de nuevo.</div>
+      <div class="c-toast c-toast-info">ℹ El salón requiere aprobación del administrador.</div>
+      <div class="c-toast c-toast-gold">✦ Nuevo evento pendiente de revisión.</div>
+    </div>
+
+    <div class="comp-lbl">Stat cards (dashboard)</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);margin-bottom:var(--space-xl)">
+      <div class="c-stat"><div class="c-stat-label">Eventos activos</div><div class="c-stat-value">14</div><div class="c-stat-delta up">↑ 3 esta semana</div></div>
+      <div class="c-stat"><div class="c-stat-label">Socios activos</div><div class="c-stat-value">382</div><div class="c-stat-delta up">↑ 12 este mes</div></div>
+      <div class="c-stat"><div class="c-stat-label">Cancelaciones</div><div class="c-stat-value">2</div><div class="c-stat-delta down">↓ vs. semana anterior</div></div>
+    </div>
+
+    <div class="comp-lbl">Tabla</div>
+    <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-xl)">
+      <table class="c-table">
+        <thead><tr><th>Evento</th><th>Fecha</th><th>Salón</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td>Asamblea General</td><td>15 may 2025</td><td>Salón Principal</td><td><span class="c-badge c-badge-green">Confirmado</span></td></tr>
+          <tr><td>Cena de Gala</td><td>22 may 2025</td><td>Salón de Honor</td><td><span class="c-badge c-badge-gold">Pendiente</span></td></tr>
+          <tr><td>Torneo de Tenis</td><td>30 may 2025</td><td>Cancha Norte</td><td><span class="c-badge c-badge-red">Cancelado</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="comp-lbl">Step / Progreso</div>
+    <div style="display:flex;align-items:center;gap:0;margin-bottom:var(--space-xl)">
+      <div class="c-step"><div class="c-step-dot done">✓</div><span style="color:var(--text3);font-size:var(--text-xs)">Cotización</span></div>
+      <div class="c-step-line" style="flex:1;height:1px;background:var(--green);margin:0 var(--space-xs)"></div>
+      <div class="c-step"><div class="c-step-dot active">2</div><span style="color:var(--gold);font-size:var(--text-xs);font-weight:700">Reserva</span></div>
+      <div class="c-step-line" style="flex:1;height:1px;background:var(--border);margin:0 var(--space-xs)"></div>
+      <div class="c-step"><div class="c-step-dot">3</div><span style="color:var(--text4);font-size:var(--text-xs)">Confirmación</span></div>
+    </div>
+
+    <div class="comp-lbl">Breadcrumb</div>
+    <div class="c-breadcrumb" style="margin-bottom:var(--space-xl)">
+      <span>Inicio</span>
+      <span class="c-breadcrumb-sep">›</span>
+      <span>Eventos</span>
+      <span class="c-breadcrumb-sep">›</span>
+      <span class="c-breadcrumb-current">Asamblea General</span>
+    </div>
+
+    <div class="comp-lbl">Separadores</div>
+    <div style="margin-bottom:var(--space-md)">
+      <div class="c-divider"></div>
+      <p style="font-size:var(--text-xs);color:var(--text4);margin-bottom:var(--space-md)">c-divider — separador neutro simple</p>
+      <div class="c-divider-gold"><div class="c-divider-gold-line"></div><div class="c-divider-gold-gem"></div><div class="c-divider-gold-line"></div></div>
+      <p style="font-size:var(--text-xs);color:var(--text4)">c-divider-gold — separador heráldico de identidad. Usar entre secciones premium.</p>
+    </div>
+  </div>
+
+  <!-- ── 11 TOKENS RÁPIDA REFERENCIA ── -->
+  <div class="ds-section alt">
+    <div class="sec-title">11 · Referencia rápida de tokens para Copilot</div>
+    <div style="background:var(--text1);border-radius:var(--radius-lg);padding:var(--space-lg);margin-bottom:var(--space-md)">
+      <pre style="font-family:var(--font-mono);font-size:0.65rem;color:#C9A227;line-height:1.8;white-space:pre-wrap">/* ── COLORES ──────────────────────── */
+--bg: #F8F7F4            --surface: #FFFFFF
+--panel: #F2F0EB         --hover: #EDEAE3
+--border: #E0DAD0        --border2: #C8BFA8
+--gold: #A8841C          --gold-l: #C9A227        --gold-d: #7A5E10
+--gold-bg: rgba(168,132,28,0.07)
+--text1: #1A1714  --text2: #4A4035  --text3: #8A7D68  --text4: #B8AD9A
+--red: #B83232   --green: #2D7D4F   --blue: #2358A0
+
+/* ── ESPACIADO ────────────────────── */
+--space-xs:0.25rem  --space-sm:0.5rem   --space-md:0.75rem
+--space-lg:1rem     --space-xl:1.5rem   --space-2xl:2rem    --space-3xl:3rem
+
+/* ── TIPOGRAFÍA ───────────────────── */
+--font-display:'EB Garamond',Georgia,serif
+--font-body:'DM Sans','Manrope',sans-serif
+--font-ui:'Manrope','DM Sans',sans-serif
+--font-mono:'Menlo','Consolas',monospace
+--text-display:1.5rem  --text-h1:1.25rem  --text-h2:1rem
+--text-h3:0.875rem  --text-body:0.8125rem  --text-small:0.75rem
+--text-xs:0.6875rem  --text-label:0.625rem
+
+/* ── RADIOS ───────────────────────── */
+--radius-xs:2px  --radius-sm:4px  --radius-md:6px
+--radius-lg:8px  --radius-xl:12px  --radius-full:9999px
+
+/* ── SOMBRAS ──────────────────────── */
+--shadow-xs:0 1px 2px rgba(26,23,20,0.06)
+--shadow-sm:0 2px 6px rgba(26,23,20,0.08)
+--shadow-md:0 4px 12px rgba(26,23,20,0.10)
+--shadow-gold:0 4px 16px rgba(168,132,28,0.20)
+
+/* ── ALTURAS ──────────────────────── */
+--height-input:2.25rem   --height-btn-md:2.25rem
+--height-navbar:2.875rem  --sidebar-width:240px</pre>
+    </div>
+    <p style="font-size:var(--text-xs);color:var(--text4);font-style:italic;">Este bloque se puede copiar directamente al :root de cualquier archivo CSS del proyecto SGIE. Todos los componentes del sistema deben consumir exclusivamente estas variables — ningún valor hardcodeado fuera de este archivo.</p>
+  </div>
+
+</div><!-- /ds-wrap -->
+</div><!-- /ds-page -->
+</body>
+</html>

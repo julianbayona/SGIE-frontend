@@ -1,0 +1,148 @@
+
+> sgie-club-boyaca@0.0.0 dev
+> vite --host 127.0.0.1 --port 5173
+
+Port 5173 is in use, trying another one...
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m870[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5174[22m/[39m
+[2m10:26:22 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m10:26:57 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m10:27:25 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m10:29:10 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Sidebar/index.tsx, /src/index.css[22m
+[2m10:29:10 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Sidebar/index.tsx, /src/index.css[22m
+[2m10:30:03 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/events/components/EventDetailHeaderTabs/index.tsx, /src/index.css[22m
+[2m10:44:24 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventRequestPage.tsx, /src/index.css[22m
+[2m10:47:59 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventRequestPage.tsx, /src/index.css[22m
+[2m10:52:17 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/MonthView/index.tsx, /src/index.css[22m
+[2m10:52:39 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/WeekView/index.tsx, /src/index.css[22m
+[2m10:53:52 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/MonthView/index.tsx, /src/index.css[22m
+[2m10:54:03 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/WeekView/index.tsx, /src/index.css[22m
+[2m10:56:00 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/MonthView/index.tsx, /src/index.css[22m
+[2m10:56:08 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/MonthView/index.tsx, /src/index.css[22m
+[2m10:56:17 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/WeekView/index.tsx, /src/index.css[22m
+[2m10:56:31 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/WeekView/index.tsx, /src/index.css[22m
+[2m10:57:00 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/WeekView/index.tsx, /src/index.css[22m
+[2m11:20:39 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventMenuPage.tsx, /src/index.css[22m
+[2m11:21:10 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventMontagePage.tsx, /src/index.css[22m
+[2m11:21:34 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventAgendaPage.tsx, /src/index.css[22m
+[2m11:22:25 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventQuotePage.tsx, /src/index.css[22m
+[2m11:22:41 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventQuotePage.tsx, /src/index.css[22m
+[2m11:22:54 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventQuotePage.tsx, /src/index.css[22m
+[2m11:23:12 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventQuotePage.tsx, /src/index.css[22m
+[2m11:23:28 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventPaymentsPage.tsx, /src/index.css[22m
+[2m11:25:44 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventSummaryPage.tsx, /src/index.css[22m
+[2m11:34:56 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/ClientsPage.tsx, /src/pages/QuotesPage.tsx, /src/pages/EventAgendaPage.tsx, /src/pages/EventQuotePage.tsx, /src/pages/EventRequestPage.tsx, /src/pages/EventsPage.tsx, /src/pages/EventMenuPage.tsx, /src/pages/EventSummaryPage.tsx, /src/pages/EventPaymentsPage.tsx, /src/pages/EventMontagePage.tsx[22m
+[2m11:35:14 a. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/clients/types/index.ts[22m
+[2m11:36:12 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/ClientsPage.tsx, /src/index.css[22m
+[2m11:36:24 a. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/clients/components/ClientsTable/index.tsx, /src/index.css[22m
+[2m12:23:17 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/main.tsx[22m
+[2m12:23:28 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/ClientsPage.tsx, /src/index.css[22m
+[2m12:23:40 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/CatalogsPage.tsx, /src/index.css[22m
+[2m12:23:55 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/UsersPage.tsx, /src/index.css[22m
+[2m12:24:09 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventMenuPage.tsx, /src/index.css[22m
+[2m12:24:18 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventMontagePage.tsx, /src/index.css[22m
+[2m12:24:38 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventAgendaPage.tsx, /src/index.css[22m
+[2m12:24:56 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventAgendaPage.tsx, /src/index.css[22m
+[2m12:25:09 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventPaymentsPage.tsx, /src/index.css[22m
+[2m12:25:43 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventQuotePage.tsx, /src/index.css[22m
+[2m12:26:13 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventQuotePage.tsx, /src/index.css[22m
+[2m12:26:28 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventRequestPage.tsx, /src/index.css[22m
+[2m12:26:47 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/events/components/EventDetailHeaderTabs/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mSGIE_DesignSystem_Master.html[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/contexts/AuthContext.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/EventAgendaPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/QuotesPage.tsx, /src/pages/EventAgendaPage.tsx, /src/pages/EventQuotePage.tsx, /src/pages/EventRequestPage.tsx, /src/pages/EventsPage.tsx, /src/pages/EventMenuPage.tsx, /src/pages/EventSummaryPage.tsx, /src/pages/EventPaymentsPage.tsx, /src/pages/EventMontagePage.tsx, /src/pages/CatalogsPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/ClientsPage.tsx, /src/pages/QuotesPage.tsx, /src/pages/EventAgendaPage.tsx, /src/pages/EventQuotePage.tsx, /src/pages/EventRequestPage.tsx, /src/pages/EventsPage.tsx, /src/pages/EventMenuPage.tsx, /src/pages/EventSummaryPage.tsx, /src/pages/EventPaymentsPage.tsx, /src/pages/EventMontagePage.tsx, /src/pages/CatalogsPage.tsx, /src/features/availability/components/RoomAvailabilityList/index.tsx, /src/features/events/components/EventDetailHeaderTabs/index.tsx, /src/features/calendar/components/MonthView/index.tsx, /src/features/calendar/components/WeekView/index.tsx, /src/features/calendar/components/DayView/index.tsx, /src/pages/ReportsPage.tsx, /src/pages/UsersPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/ClientsPage.tsx, /src/pages/QuotesPage.tsx, /src/pages/EventAgendaPage.tsx, /src/pages/EventQuotePage.tsx, /src/pages/EventRequestPage.tsx, /src/pages/EventsPage.tsx, /src/pages/EventMenuPage.tsx, /src/pages/EventSummaryPage.tsx, /src/pages/EventPaymentsPage.tsx, /src/pages/EventMontagePage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/QuotesPage.tsx, /src/pages/EventQuotePage.tsx, /src/pages/EventMenuPage.tsx, /src/pages/EventPaymentsPage.tsx, /src/pages/EventMontagePage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/QuotesPage.tsx, /src/pages/EventAgendaPage.tsx, /src/pages/EventQuotePage.tsx, /src/pages/EventRequestPage.tsx, /src/pages/EventsPage.tsx, /src/pages/EventMenuPage.tsx, /src/pages/EventSummaryPage.tsx, /src/pages/EventPaymentsPage.tsx, /src/pages/EventMontagePage.tsx, /src/features/events/components/EventDetailHeaderTabs/index.tsx, /src/features/calendar/components/MonthView/index.tsx, /src/features/calendar/components/WeekView/index.tsx, /src/features/calendar/components/DayView/index.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/api/index.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/EventMenuPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/EventMontagePage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/EventAgendaPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/EventAgendaPage.tsx, /src/pages/EventSummaryPage.tsx, /src/pages/EventPaymentsPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/EventAgendaPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/ReportsPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/EventAgendaPage.tsx, /src/pages/EventQuotePage.tsx, /src/pages/EventRequestPage.tsx, /src/pages/EventsPage.tsx, /src/pages/EventMenuPage.tsx, /src/pages/EventSummaryPage.tsx, /src/pages/EventPaymentsPage.tsx, /src/pages/EventMontagePage.tsx, /src/pages/CatalogsPage.tsx, /src/features/availability/components/RoomAvailabilityList/index.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/api/types.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/UsersPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/auth/ProtectedRoute.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/auth/UserMenu.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Sidebar/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/layout/Header/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ui/StatusBadge/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ui/Button/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ui/PageTitle/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/ui/Card/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/contexts/AuthContext.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/availability/components/AvailabilityPanel/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/availability/components/MiniCalendar/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/availability/components/RoomAvailabilityList/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/availability/types/index.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/availability/hooks/useAvailability.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/CalendarHeader/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/CalendarView/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/DayView/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/EventItem/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/MonthView/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/calendar/components/WeekView/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/calendar/types/index.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/calendar/hooks/useCalendar.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/calendar/utils/eventLayout.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/clients/components/ClientFormModal/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/clients/components/ClientTableRow/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/clients/components/ClientsHeader/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/clients/components/ClientsTable/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/clients/components/ClientsTablePagination/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/clients/types/index.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/events/components/CancelEventModal/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/events/components/EventsPageHeader/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/events/components/EventDetailHeaderTabs/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/events/components/EventsTable/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/events/components/EventsTablePagination/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/events/components/EventTableRow/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/events/components/EventsToolbar/index.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m changed tsconfig file detected: C:\Users\julia\Documents\Codex\2026-04-23-vamos-a-crear-un-proyecto-en\prototipo UI\tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mtailwind.config.js[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/EventSectionPlaceholderPage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/events/data/menuCatalogFallback.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/EventAgendaPage.tsx, /src/pages/EventQuotePage.tsx, /src/pages/EventMenuPage.tsx, /src/pages/EventPaymentsPage.tsx, /src/pages/EventMontagePage.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/events/types/index.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/quotes/components/QuotesTablePagination/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/quotes/components/QuotesHeader/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/quotes/components/QuotesTable/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/features/quotes/components/QuoteTableRow/index.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/features/quotes/types/index.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/layouts/MainLayout.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/CalendarPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/CatalogsPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/ClientsPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventAgendaPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventMenuPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventPaymentsPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventMontagePage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventRequestPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventQuotePage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventSectionPlaceholderPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventsPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EventSummaryPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/LoginPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/QuotesPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/ReportsPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/UsersPage.tsx, /src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/services/eventService.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/services/roomService.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/store/calendarStore.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/utils/formatters.ts[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/main.tsx[22m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m12:40:16 p. m.[22m [36m[1m[vite][22m[39m server restarted.
+[2m12:41:52 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mSGIE_DesignSystem_Master.html[22m
+[2m12:41:52 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m12:42:31 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mSGIE_DesignSystem_Master.html[22m
+[2m12:42:31 p. m.[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mindex.html[22m

@@ -1,0 +1,12 @@
+export { default as apiClient } from './client';
+export { default as clientesApi } from './clientes';
+export { default as salonesApi } from './salones';
+export { default as eventosApi } from './eventos';
+export { default as cotizacionesApi } from './cotizaciones';
+export { default as catalogosApi } from './catalogos';
+export { default as menusApi } from './menus';
+export { default as montajesApi } from './montajes';
+export { default as pagosApi } from './pagos';
+export { default as reportesApi } from './reportes';
+export { default as usuariosApi } from './usuarios';
+export type * from './types';
