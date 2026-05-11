@@ -23,14 +23,14 @@ const eventosApi = {
     return apiClient.post<EventoResponse>('/eventos', data).then((r) => r.data);
   },
 
-  /** Agrega una reserva de salón a un evento existente. */
+  /** Agrega una reserva de salon a un evento existente. */
   crearReserva(eventoId: string, data: CrearReservaSalonRequest): Promise<EventoResponse> {
     return apiClient
       .post<EventoResponse>(`/eventos/${eventoId}/reservas`, data)
       .then((r) => r.data);
   },
 
-  /** Modifica una reserva de salón existente. */
+  /** Modifica una reserva de salon existente. */
   modificarReserva(
     reservaRaizId: string,
     data: ModificarReservaSalonRequest
@@ -40,7 +40,14 @@ const eventosApi = {
       .then((r) => r.data);
   },
 
-  /** Confirma un evento (transición de estado). */
+  /** Retira una reserva vigente del evento sin perder trazabilidad historica. */
+  retirarReserva(reservaRaizId: string): Promise<EventoResponse> {
+    return apiClient
+      .delete<EventoResponse>(`/eventos/reservas/${reservaRaizId}`)
+      .then((r) => r.data);
+  },
+
+  /** Confirma un evento. */
   confirmar(eventoId: string): Promise<EventoResponse> {
     return apiClient.post<EventoResponse>(`/eventos/${eventoId}/confirmar`).then((r) => r.data);
   },

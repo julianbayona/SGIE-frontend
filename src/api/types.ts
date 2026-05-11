@@ -81,6 +81,7 @@ export interface ReservaSalonResponse {
   fechaHoraFin: string;
   version: number;
   vigente: boolean;
+  activa: boolean;
 }
 
 export interface EventoResponse {
