@@ -246,7 +246,7 @@ const EventMontagePage: React.FC = () => {
         }
 
         try {
-          const cotizacionVigente = await cotizacionesApi.obtenerVigente(reservaId);
+          const cotizacionVigente = await cotizacionesApi.obtenerVigentePorEvento(eventoData.id);
           if (!cancelled) {
             setQuoteState(cotizacionVigente.estado);
           }

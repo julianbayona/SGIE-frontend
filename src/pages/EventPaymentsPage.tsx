@@ -78,8 +78,6 @@ const EventPaymentsPage: React.FC = () => {
           return;
         }
 
-        const reservaRaizId = reservaActual.reservaRaizId || reservaActual.id;
-
         const [clienteData, tipoEventoData, salonData] = await Promise.all([
           clientesApi.obtenerPorId(eventoData.clienteId),
           catalogosApi.tiposEvento.obtenerPorId(eventoData.tipoEventoId),
@@ -95,7 +93,7 @@ const EventPaymentsPage: React.FC = () => {
         setSalon(salonData);
 
         try {
-          const cotizacion = await cotizacionesApi.obtenerVigente(reservaRaizId);
+          const cotizacion = await cotizacionesApi.obtenerVigentePorEvento(eventId);
           const estadoFinanciero = await pagosApi.estadoFinanciero(eventId);
           if (cancelled) {
             return;

@@ -21,6 +21,13 @@ const cotizacionesApi = {
       .then((r) => r.data);
   },
 
+  /** Genera una cotizacion consolidada con todas las reservas activas del evento. */
+  generarPorEvento(eventoId: string, data: GenerarCotizacionRequest): Promise<CotizacionResponse> {
+    return apiClient
+      .post<CotizacionResponse>(`/eventos/${eventoId}/cotizaciones`, data)
+      .then((r) => r.data);
+  },
+
   /** Obtiene una cotización por su UUID. */
   obtenerPorId(id: string): Promise<CotizacionResponse> {
     return apiClient.get<CotizacionResponse>(`/cotizaciones/${id}`).then((r) => r.data);
@@ -30,6 +37,13 @@ const cotizacionesApi = {
   obtenerVigente(reservaRaizId: string): Promise<CotizacionResponse> {
     return apiClient
       .get<CotizacionResponse>(`/reservas/${reservaRaizId}/cotizacion-vigente`)
+      .then((r) => r.data);
+  },
+
+  /** Obtiene la cotizacion vigente del evento consolidado. */
+  obtenerVigentePorEvento(eventoId: string): Promise<CotizacionResponse> {
+    return apiClient
+      .get<CotizacionResponse>(`/eventos/${eventoId}/cotizacion-vigente`)
       .then((r) => r.data);
   },
 

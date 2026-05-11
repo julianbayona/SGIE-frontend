@@ -43,7 +43,6 @@ const EventQuotePage: React.FC = () => {
 
   const [evento, setEvento] = useState<EventoResponse | null>(null);
   const [cotizacion, setCotizacion] = useState<CotizacionResponse | null>(null);
-  const [reservaRaizId, setReservaRaizId] = useState<string | null>(null);
   const [cliente, setCliente] = useState<ClienteResponse | null>(null);
   const [salon, setSalon] = useState<SalonResponse | null>(null);
   const [tipoEvento, setTipoEvento] = useState<CatalogoBasicoResponse | null>(null);
@@ -67,15 +66,13 @@ const EventQuotePage: React.FC = () => {
 
         setEvento(eventoData);
 
-        const reserva = eventoData.reservas.find((item) => item.vigente);
+        const reservasActivas = eventoData.reservas.filter((item) => item.vigente && item.activa);
+        const reserva = reservasActivas[0];
         if (!reserva) {
-          setError('No hay reserva activa para este evento');
+          setError('No hay reservas activas para este evento');
           setLoading(false);
           return;
         }
-
-        const reservaId = reserva.reservaRaizId || reserva.id;
-        setReservaRaizId(reservaId);
 
         const [clienteData, tipoEventoData, salonData] = await Promise.all([
           clientesApi.obtenerPorId(eventoData.clienteId),
@@ -90,7 +87,7 @@ const EventQuotePage: React.FC = () => {
         setSalon(salonData);
 
         try {
-          const cotizacionData = await cotizacionesApi.obtenerVigente(reservaId);
+          const cotizacionData = await cotizacionesApi.obtenerVigentePorEvento(eventoData.id);
           if (!cancelled) {
             setCotizacion(cotizacionData);
           }
@@ -117,6 +114,7 @@ const EventQuotePage: React.FC = () => {
 
   const isDraft = cotizacion?.estado === 'BORRADOR';
   const isCancelled = evento?.estado === 'CANCELADO';
+  const hasReservasActivas = (evento?.reservas ?? []).some((item) => item.vigente && item.activa);
   const canEditPrices = cotizacion && !isCancelled ? ['BORRADOR', 'GENERADA', 'ENVIADA'].includes(cotizacion.estado) : false;
   const quoteStatus = cotizacion ? estadoMap[cotizacion.estado] : 'Borrador';
 
@@ -160,7 +158,7 @@ const EventQuotePage: React.FC = () => {
   const montageItems = useMemo(() => quoteItems.filter((item) => item.source === 'montaje'), [quoteItems]);
 
   const handleGenerarBorrador = async () => {
-    if (!reservaRaizId) return;
+    if (!eventId || !hasReservasActivas) return;
     if (isCancelled) {
       setError('No se puede generar cotizacion para un evento cancelado.');
       return;
@@ -170,13 +168,13 @@ const EventQuotePage: React.FC = () => {
       setSaving(true);
       setError(null);
 
-      const nuevaCotizacion = await cotizacionesApi.generar(reservaRaizId, {
+      const nuevaCotizacion = await cotizacionesApi.generarPorEvento(eventId, {
         descuento: 0,
         observaciones: null,
       });
 
       setCotizacion(nuevaCotizacion);
-      toast.success('Borrador generado', 'La cotizacion quedo creada desde menu y montaje.');
+      toast.success('Borrador generado', 'La cotizacion quedo consolidada con las reservas activas del evento.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al generar borrador';
       setError(message);
@@ -359,8 +357,13 @@ const EventQuotePage: React.FC = () => {
       };
     }
 
-    const reserva = evento.reservas.find((item) => item.vigente);
+    const reservasActivas = evento.reservas.filter((item) => item.vigente && item.activa);
+    const totalInvitados = reservasActivas.reduce((total, reserva) => total + reserva.numInvitados, 0);
     const inicio = new Date(evento.fechaHoraInicio);
+    const venue =
+      reservasActivas.length > 1
+        ? `${reservasActivas.length} reservas activas`
+        : salon?.nombre || 'Sin salon';
 
     return {
       id: evento.id,
@@ -371,9 +374,14 @@ const EventQuotePage: React.FC = () => {
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',
       eventType: tipoEvento?.nombre || 'Cargando...',
-      guests: reserva?.numInvitados || 0,
-      venue: salon?.nombre || 'Sin salón',
-      venueCapacity: salon ? `Capacidad: ${salon.capacidad} pax` : '',
+      guests: totalInvitados,
+      venue,
+      venueCapacity:
+        reservasActivas.length > 1
+          ? 'Cotizacion consolidada'
+          : salon
+            ? `Capacidad: ${salon.capacidad} pax`
+            : '',
       totalQuote: formatCurrency(adjustedTotal),
     };
   }, [adjustedTotal, cliente, eventId, evento, salon, tipoEvento]);
@@ -410,7 +418,7 @@ const EventQuotePage: React.FC = () => {
         )}
 
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-6 py-5 text-sm text-amber-800">
-          <p className="font-semibold">No hay cotización vigente para esta reserva.</p>
+          <p className="font-semibold">No hay cotizacion vigente para este evento.</p>
           <p className="mt-1">
             Menú y Montaje ya guardan lo solicitado para el evento, pero la cotización solo existe cuando generas un
             borrador. Si editaste esos apartados después de una versión previa, esa cotización quedó sin vigencia.
@@ -420,7 +428,7 @@ const EventQuotePage: React.FC = () => {
               className="rounded-md bg-primary-gold px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-primary disabled:opacity-50"
               type="button"
               onClick={handleGenerarBorrador}
-              disabled={isCancelled || saving || !reservaRaizId}
+              disabled={isCancelled || saving || !hasReservasActivas}
             >
               {isCancelled ? 'Evento cancelado' : saving ? 'Generando...' : 'Generar borrador'}
             </button>
@@ -708,7 +716,7 @@ const EventQuotePage: React.FC = () => {
               className="flex-1 rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
               type="button"
               onClick={handleGenerarNuevaVersion}
-              disabled={isCancelled || saving || !reservaRaizId}
+              disabled={isCancelled || saving || !hasReservasActivas}
             >
               Crear nueva version
             </button>
