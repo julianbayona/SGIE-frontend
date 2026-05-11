@@ -18,6 +18,7 @@ import type {
   SobremantelResponse,
   EstadoCotizacion,
   ClienteResponse,
+  ReservaSalonResponse,
   SalonResponse,
 } from '@/api/types';
 
@@ -48,13 +49,37 @@ const getTextilColorId = (textil: MantelResponse | SobremantelResponse | undefin
   return textil.colorId ?? textil.idColor ?? textil.color?.id ?? null;
 };
 
+const createDefaultInfrastructure = (): InfrastructureItem[] => [
+  { id: 'mesa_ponque', name: 'Mesa ponque', selected: false },
+  { id: 'mesa_regalos', name: 'Mesa regalos', selected: false },
+  { id: 'espacio_musicos', name: 'Espacio musicos', selected: false },
+  { id: 'espacio_bombas', name: 'Espacio bombas', selected: false },
+];
+
+const isReservaOperativa = (reserva: ReservaSalonResponse) =>
+  reserva.vigente && reserva.activa !== false;
+
+const reservaKey = (reserva: ReservaSalonResponse) => reserva.reservaRaizId || reserva.id;
+
+const formatReservaRange = (reserva: ReservaSalonResponse) => {
+  const inicio = new Intl.DateTimeFormat('es-CO', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(reserva.fechaHoraInicio));
+  const fin = new Intl.DateTimeFormat('es-CO', {
+    timeStyle: 'short',
+  }).format(new Date(reserva.fechaHoraFin));
+  return `${inicio} - ${fin}`;
+};
+
 const EventMontagePage: React.FC = () => {
   const { eventId } = useParams();
   const toast = useToast();
 
   const [evento, setEvento] = useState<EventoResponse | null>(null);
   const [cliente, setCliente] = useState<ClienteResponse | null>(null);
-  const [salon, setSalon] = useState<SalonResponse | null>(null);
+  const [salones, setSalones] = useState<SalonResponse[]>([]);
+  const [selectedReservaId, setSelectedReservaId] = useState('');
   const [tipoEvento, setTipoEvento] = useState<CatalogoBasicoResponse | null>(null);
   const [tiposMesa, setTiposMesa] = useState<CatalogoBasicoResponse[]>([]);
   const [tiposSilla, setTiposSilla] = useState<CatalogoBasicoResponse[]>([]);
@@ -84,6 +109,19 @@ const EventMontagePage: React.FC = () => {
   ]);
 
   const [additionalItems, setAdditionalItems] = useState<AdditionalItem[]>([]);
+  const reservasActivas = useMemo(
+    () => evento?.reservas.filter(isReservaOperativa) ?? [],
+    [evento],
+  );
+  const selectedReserva = useMemo(
+    () => reservasActivas.find((reserva) => reservaKey(reserva) === selectedReservaId) ?? reservasActivas[0] ?? null,
+    [reservasActivas, selectedReservaId],
+  );
+  const salonesMap = useMemo(
+    () => new Map(salones.map((item) => [item.id, item])),
+    [salones],
+  );
+  const salon = selectedReserva ? salonesMap.get(selectedReserva.salonId) ?? null : null;
   const isCancelled = evento?.estado === 'CANCELADO';
 
   useEffect(() => {
@@ -109,7 +147,9 @@ const EventMontagePage: React.FC = () => {
 
         if (cancelled) return;
 
-        const reservaActual = eventoData.reservas.find((reserva) => reserva.vigente);
+        const reservasOperativas = eventoData.reservas.filter(isReservaOperativa);
+        const reservaActual =
+          reservasOperativas.find((reserva) => reservaKey(reserva) === selectedReservaId) ?? reservasOperativas[0];
         if (!reservaActual) {
           setError('No hay reserva activa para este evento');
           setLoading(false);
@@ -122,11 +162,13 @@ const EventMontagePage: React.FC = () => {
         const sobremantelesActivos = sobremantelesData.filter((item) => item.activo);
         const coloresActivos = coloresData.filter((item) => item.activo);
         const adicionalesActivos = adicionalesData.filter((item) => item.activo);
+        const reservaId = reservaActual.reservaRaizId || reservaActual.id;
+        setSelectedReservaId(reservaId);
 
-        const [clienteData, tipoEventoData, salonData] = await Promise.all([
+        const [clienteData, tipoEventoData, salonesData] = await Promise.all([
           clientesApi.obtenerPorId(eventoData.clienteId),
           catalogosApi.tiposEvento.obtenerPorId(eventoData.tipoEventoId),
-          salonesApi.obtenerPorId(reservaActual.salonId),
+          salonesApi.listar(),
         ]);
 
         if (cancelled) return;
@@ -134,7 +176,7 @@ const EventMontagePage: React.FC = () => {
         setEvento(eventoData);
         setCliente(clienteData);
         setTipoEvento(tipoEventoData);
-        setSalon(salonData);
+        setSalones(salonesData);
         setTiposMesa(mesasActivas);
         setTiposSilla(sillasActivas);
         setManteles(mantelesActivos);
@@ -145,6 +187,11 @@ const EventMontagePage: React.FC = () => {
         if (sillasActivas.length > 0) setChairType(sillasActivas[0]!.id);
         if (mantelesActivos.length > 0) setClothType(mantelesActivos[0]!.id);
         if (sobremantelesActivos.length > 0) setTopClothType(sobremantelesActivos[0]!.id);
+        setPeoplePerTable(10);
+        setTableCount(12);
+        setDinnerware(false);
+        setFajonEnabled(true);
+        setInfrastructure(createDefaultInfrastructure());
 
         setAdditionalItems(
           adicionalesActivos.map((item) => ({
@@ -157,8 +204,6 @@ const EventMontagePage: React.FC = () => {
             basePrice: Number(item.precioBase),
           }))
         );
-
-        const reservaId = reservaActual.reservaRaizId || reservaActual.id;
 
         try {
           const montaje = await montajesApi.obtener(reservaId);
@@ -224,7 +269,7 @@ const EventMontagePage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [eventId]);
+  }, [eventId, selectedReservaId]);
 
   const updateInfrastructureSelection = (itemId: string, checked: boolean) => {
     if (isCancelled) return;
@@ -264,7 +309,7 @@ const EventMontagePage: React.FC = () => {
       return;
     }
 
-    const reserva = evento.reservas.find((item) => item.vigente);
+    const reserva = selectedReserva;
     if (!reserva) {
       setError('No hay reserva activa para este evento');
       return;
@@ -354,7 +399,7 @@ const EventMontagePage: React.FC = () => {
       };
     }
 
-    const reserva = evento.reservas.find((item) => item.vigente);
+    const reserva = selectedReserva;
     const inicio = new Date(evento.fechaHoraInicio);
 
     return {
@@ -371,7 +416,7 @@ const EventMontagePage: React.FC = () => {
       venueCapacity: salon ? `Capacidad: ${salon.capacidad} pax` : '',
       totalQuote: '$0',
     };
-  }, [cliente, eventId, evento, salon, tipoEvento]);
+  }, [cliente, eventId, evento, salon, selectedReserva, tipoEvento]);
 
   const selectedMantel = useMemo(
     () => manteles.find((item) => item.id === clothType),
@@ -444,6 +489,16 @@ const EventMontagePage: React.FC = () => {
         <div className={`mb-24 flex-1 space-y-6 ${isCancelled ? 'opacity-75' : ''}`}>
           {error && (
             <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+          )}
+
+          {reservasActivas.length > 1 && (
+            <ReservaSelector
+              reservas={reservasActivas}
+              salonesMap={salonesMap}
+              selectedReservaId={selectedReserva ? reservaKey(selectedReserva) : ''}
+              disabled={isCancelled}
+              onChange={setSelectedReservaId}
+            />
           )}
 
           <div className="overflow-hidden rounded-2xl border border-stone-300 bg-[#fbf8f2] shadow-xl shadow-stone-900/5">
@@ -808,5 +863,46 @@ const EventMontagePage: React.FC = () => {
     </section>
   );
 };
+
+type ReservaSelectorProps = {
+  reservas: ReservaSalonResponse[];
+  salonesMap: Map<string, SalonResponse>;
+  selectedReservaId: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+};
+
+function ReservaSelector({
+  reservas,
+  salonesMap,
+  selectedReservaId,
+  disabled,
+  onChange,
+}: ReservaSelectorProps) {
+  return (
+    <section className="rounded-2xl border border-stone-300 bg-[#fbf8f2] p-5 shadow-xl shadow-stone-900/5">
+      <p className="text-xs font-black uppercase tracking-[0.22em] text-[#A8841C]">Reserva seleccionada</p>
+      <h3 className="mt-1 font-serif text-xl font-black text-stone-950">Montaje por salon y horario</h3>
+      <p className="mt-1 text-sm font-medium text-stone-600">
+        El montaje se guarda sobre la reserva elegida. Cambia la seleccion para configurar otro salon.
+      </p>
+      <select
+        className="mt-4 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-semibold outline-none transition focus:border-[#A8841C] focus:ring-2 focus:ring-[#A8841C]/15"
+        value={selectedReservaId}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
+      >
+        {reservas.map((reserva, index) => {
+          const salon = salonesMap.get(reserva.salonId);
+          return (
+            <option key={reservaKey(reserva)} value={reservaKey(reserva)}>
+              Reserva {index + 1} · {salon?.nombre || 'Salon'} · {formatReservaRange(reserva)}
+            </option>
+          );
+        })}
+      </select>
+    </section>
+  );
+}
 
 export default EventMontagePage;

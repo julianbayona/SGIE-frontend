@@ -18,6 +18,7 @@ import type {
   EventoResponse,
   PlatoMomentoResponse,
   PlatoResponse,
+  ReservaSalonResponse,
   SalonResponse,
   TipoMomentoMenuResponse,
 } from '@/api/types';
@@ -46,6 +47,22 @@ const formatCurrency = (value: number) =>
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
+const isReservaOperativa = (reserva: ReservaSalonResponse) =>
+  reserva.vigente && reserva.activa !== false;
+
+const reservaKey = (reserva: ReservaSalonResponse) => reserva.reservaRaizId || reserva.id;
+
+const formatReservaRange = (reserva: ReservaSalonResponse) => {
+  const inicio = new Intl.DateTimeFormat('es-CO', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(reserva.fechaHoraInicio));
+  const fin = new Intl.DateTimeFormat('es-CO', {
+    timeStyle: 'short',
+  }).format(new Date(reserva.fechaHoraFin));
+  return `${inicio} - ${fin}`;
+};
+
 const fieldClass =
   'w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#A8841C] focus:ring-2 focus:ring-[#A8841C]/15';
 
@@ -55,7 +72,8 @@ const EventMenuPage: React.FC = () => {
 
   const [evento, setEvento] = useState<EventoResponse | null>(null);
   const [cliente, setCliente] = useState<ClienteResponse | null>(null);
-  const [salon, setSalon] = useState<SalonResponse | null>(null);
+  const [salones, setSalones] = useState<SalonResponse[]>([]);
+  const [selectedReservaId, setSelectedReservaId] = useState('');
   const [tipoEvento, setTipoEvento] = useState<CatalogoBasicoResponse | null>(null);
   const [platos, setPlatos] = useState<PlatoResponse[]>([]);
   const [momentos, setMomentos] = useState<TipoMomentoMenuResponse[]>([]);
@@ -73,7 +91,20 @@ const EventMenuPage: React.FC = () => {
   const [addCantidad, setAddCantidad] = useState(1);
   const [addExcepciones, setAddExcepciones] = useState('');
 
-  const guests = evento?.reservas.find((reserva) => reserva.vigente)?.numInvitados ?? 0;
+  const reservasActivas = useMemo(
+    () => evento?.reservas.filter(isReservaOperativa) ?? [],
+    [evento],
+  );
+  const selectedReserva = useMemo(
+    () => reservasActivas.find((reserva) => reservaKey(reserva) === selectedReservaId) ?? reservasActivas[0] ?? null,
+    [reservasActivas, selectedReservaId],
+  );
+  const salonesMap = useMemo(
+    () => new Map(salones.map((item) => [item.id, item])),
+    [salones],
+  );
+  const salon = selectedReserva ? salonesMap.get(selectedReserva.salonId) ?? null : null;
+  const guests = selectedReserva?.numInvitados ?? 0;
   const isCancelled = evento?.estado === 'CANCELADO';
 
   useEffect(() => {
@@ -115,7 +146,9 @@ const EventMenuPage: React.FC = () => {
           setAddPlatoId(primerPlatoAsociado?.platoId ?? '');
         }
 
-        const reserva = eventoData.reservas.find((item) => item.vigente);
+        const reservasOperativas = eventoData.reservas.filter(isReservaOperativa);
+        const reserva =
+          reservasOperativas.find((item) => reservaKey(item) === selectedReservaId) ?? reservasOperativas[0];
         if (!reserva) {
           setError('No hay reserva activa para este evento');
           setLoading(false);
@@ -123,18 +156,21 @@ const EventMenuPage: React.FC = () => {
         }
 
         const reservaId = reserva.reservaRaizId || reserva.id;
+        setSelectedReservaId(reservaId);
 
-        const [clienteData, tipoEventoData, salonData] = await Promise.all([
+        const [clienteData, tipoEventoData, salonesData] = await Promise.all([
           clientesApi.obtenerPorId(eventoData.clienteId),
           catalogosApi.tiposEvento.obtenerPorId(eventoData.tipoEventoId),
-          salonesApi.obtenerPorId(reserva.salonId),
+          salonesApi.listar(),
         ]);
 
         if (cancelled) return;
 
         setCliente(clienteData);
         setTipoEvento(tipoEventoData);
-        setSalon(salonData);
+        setSalones(salonesData);
+        setNotasGenerales('');
+        setSelecciones([]);
 
         try {
           const menuExistente = await menusApi.obtener(reservaId);
@@ -179,7 +215,7 @@ const EventMenuPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [eventId]);
+  }, [eventId, selectedReservaId]);
 
   const totalMenu = useMemo(
     () =>
@@ -310,7 +346,7 @@ const EventMenuPage: React.FC = () => {
       return;
     }
 
-    const reserva = evento.reservas.find((item) => item.vigente);
+    const reserva = selectedReserva;
     if (!reserva) {
       setError('No hay reserva activa');
       return;
@@ -374,7 +410,7 @@ const EventMenuPage: React.FC = () => {
       };
     }
 
-    const reserva = evento.reservas.find((item) => item.vigente);
+    const reserva = selectedReserva;
     const inicio = new Date(evento.fechaHoraInicio);
 
     return {
@@ -391,7 +427,7 @@ const EventMenuPage: React.FC = () => {
       venueCapacity: salon ? `Capacidad: ${salon.capacidad} pax` : '',
       totalQuote: '$0',
     };
-  }, [cliente, eventId, evento, salon, tipoEvento]);
+  }, [cliente, eventId, evento, salon, selectedReserva, tipoEvento]);
 
   const momentoNombre = (id: string) =>
     momentos.find((momento) => momento.id === id)?.nombre ?? formatShortId(id, 'MOM-');
@@ -430,6 +466,16 @@ const EventMenuPage: React.FC = () => {
             <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
               {error}
             </div>
+          )}
+
+          {reservasActivas.length > 1 && (
+            <ReservaSelector
+              reservas={reservasActivas}
+              salonesMap={salonesMap}
+              selectedReservaId={selectedReserva ? reservaKey(selectedReserva) : ''}
+              disabled={isCancelled}
+              onChange={setSelectedReservaId}
+            />
           )}
 
           <section className="overflow-hidden rounded-2xl border border-stone-300 bg-[#fbf8f2] shadow-xl shadow-stone-900/5">
@@ -745,6 +791,47 @@ const EventMenuPage: React.FC = () => {
     </section>
   );
 };
+
+type ReservaSelectorProps = {
+  reservas: ReservaSalonResponse[];
+  salonesMap: Map<string, SalonResponse>;
+  selectedReservaId: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+};
+
+function ReservaSelector({
+  reservas,
+  salonesMap,
+  selectedReservaId,
+  disabled,
+  onChange,
+}: ReservaSelectorProps) {
+  return (
+    <section className="rounded-2xl border border-stone-300 bg-[#fbf8f2] p-5 shadow-xl shadow-stone-900/5">
+      <p className="text-xs font-black uppercase tracking-[0.22em] text-[#A8841C]">Reserva seleccionada</p>
+      <h3 className="mt-1 font-serif text-xl font-black text-stone-950">Menu por salon y horario</h3>
+      <p className="mt-1 text-sm font-medium text-stone-600">
+        El menu se guarda sobre la reserva elegida. Cambia la seleccion para configurar otro bloque del evento.
+      </p>
+      <select
+        className="mt-4 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-semibold outline-none transition focus:border-[#A8841C] focus:ring-2 focus:ring-[#A8841C]/15"
+        value={selectedReservaId}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
+      >
+        {reservas.map((reserva, index) => {
+          const salon = salonesMap.get(reserva.salonId);
+          return (
+            <option key={reservaKey(reserva)} value={reservaKey(reserva)}>
+              Reserva {index + 1} · {salon?.nombre || 'Salon'} · {formatReservaRange(reserva)}
+            </option>
+          );
+        })}
+      </select>
+    </section>
+  );
+}
 
 function SummaryLine({ label, value }: { label: string; value: string }) {
   return (
