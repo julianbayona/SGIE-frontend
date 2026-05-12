@@ -133,6 +133,7 @@ const CatalogsPage: React.FC = () => {
   const isColor = activeCatalog === 'color';
   const isTextil = activeCatalog === 'mantel' || activeCatalog === 'sobremantel';
   const activeTab = catalogTabs.find((tab) => tab.key === activeCatalog)!;
+  const activeColors = colors.filter((color) => color.activo);
 
   const resetForm = () => {
     setEditingId(null);
@@ -142,7 +143,7 @@ const CatalogsPage: React.FC = () => {
     setFormModoCobro('SERVICIO');
     setFormPrecioBase(0);
     setFormCodigoHex('#C9A46A');
-    setFormColorId(colors[0]?.id ?? '');
+    setFormColorId(activeColors[0]?.id ?? '');
     setFormPlatoId(platosCatalogo.find((item) => item.activo)?.id ?? '');
     setFormMomentoId(momentosCatalogo.find((item) => item.activo)?.id ?? '');
   };
@@ -188,8 +189,8 @@ const CatalogsPage: React.FC = () => {
         setFormPlatoId((current) => current || platoData.find((item) => item.activo)?.id || '');
         setFormMomentoId((current) => current || momentoData.find((item) => item.activo)?.id || '');
       }
-      if ((key === 'mantel' || key === 'sobremantel') && colorData.length > 0) {
-        setFormColorId((current) => current || colorData[0]!.id);
+      if ((key === 'mantel' || key === 'sobremantel') && colorData.some((color) => color.activo)) {
+        setFormColorId((current) => current || colorData.find((color) => color.activo)?.id || '');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar el catalogo.');
@@ -224,11 +225,12 @@ const CatalogsPage: React.FC = () => {
     setFormModoCobro('modoCobro' in row ? (row as TipoAdicionalResponse).modoCobro : 'SERVICIO');
     setFormPrecioBase('precioBase' in row ? Number((row as TipoAdicionalResponse | PlatoResponse).precioBase) : 0);
     setFormCodigoHex('codigoHex' in row ? (row as ColorResponse).codigoHex : '#C9A46A');
-    setFormColorId(
+    const currentColorId =
       activeCatalog === 'mantel' || activeCatalog === 'sobremantel'
         ? getRowColorId(row as MantelResponse | SobremantelResponse) ?? ''
-        : ''
-    );
+        : '';
+    const currentColorIsActive = colors.some((color) => color.id === currentColorId && color.activo);
+    setFormColorId(currentColorIsActive ? currentColorId : '');
   };
 
   const handleSave = async () => {
@@ -671,12 +673,17 @@ const CatalogsPage: React.FC = () => {
                   onChange={(e) => setFormColorId(e.target.value)}
                 >
                   <option value="">Selecciona un color</option>
-                  {colors.map((color) => (
+                  {activeColors.map((color) => (
                     <option key={color.id} value={color.id}>
                       {color.nombre} - {color.codigoHex}
                     </option>
                   ))}
                 </select>
+                {activeColors.length === 0 ? (
+                  <p className="mt-2 text-xs font-semibold text-red-700">
+                    No hay colores activos disponibles. Activa o crea un color antes de continuar.
+                  </p>
+                ) : null}
               </div>
             ) : null}
 
