@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import catalogosApi from '@/api/catalogos';
 import salonesApi from '@/api/salones';
 import PageTitle from '@/components/ui/PageTitle';
@@ -106,6 +106,7 @@ const buildPlatoMomentoRows = (
 
 const CatalogsPage: React.FC = () => {
   const toast = useToast();
+  const loadSequence = useRef(0);
   const [activeCatalog, setActiveCatalog] = useState<CatalogKey>('tipo_evento');
   const [rows, setRows] = useState<GenericRow[]>([]);
   const [colors, setColors] = useState<ColorResponse[]>([]);
@@ -149,8 +150,11 @@ const CatalogsPage: React.FC = () => {
   };
 
   const loadCatalog = async (key: CatalogKey) => {
+    const requestId = loadSequence.current + 1;
+    loadSequence.current = requestId;
     setLoading(true);
     setError(null);
+    setRows([]);
 
     try {
       const needsColors = key === 'color' || key === 'mantel' || key === 'sobremantel';
@@ -178,6 +182,9 @@ const CatalogsPage: React.FC = () => {
       }
 
       const [data, colorData, platoData, momentoData] = await Promise.all([dataPromise, colorPromise, platoPromise, momentoPromise]);
+      if (requestId !== loadSequence.current) {
+        return;
+      }
       setRows(key === 'plato_momento'
         ? buildPlatoMomentoRows(data as PlatoMomentoResponse[], platoData, momentoData)
         : data as GenericRow[]
@@ -193,9 +200,13 @@ const CatalogsPage: React.FC = () => {
         setFormColorId((current) => current || colorData.find((color) => color.activo)?.id || '');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar el catalogo.');
+      if (requestId === loadSequence.current) {
+        setError(err instanceof Error ? err.message : 'Error al cargar el catalogo.');
+      }
     } finally {
-      setLoading(false);
+      if (requestId === loadSequence.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -290,6 +301,7 @@ const CatalogsPage: React.FC = () => {
           case 'tipo_adicional': await catalogosApi.tiposAdicional.actualizar(editingId, tipoAdicionalData); break;
           case 'plato': await catalogosApi.platos.actualizar(editingId, platoData); break;
           case 'tipo_momento_menu': await catalogosApi.tiposMomentoMenu.actualizar(editingId, tipoMomentoMenuData); break;
+          case 'salon': await salonesApi.actualizar(editingId, salonData); break;
           default: break;
         }
       } else {

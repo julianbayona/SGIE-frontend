@@ -33,6 +33,10 @@ const salonesApi = {
     return apiClient.post<SalonResponse>('/salones', data).then((r) => r.data);
   },
 
+  actualizar(id: string, data: RegistrarSalonRequest): Promise<SalonResponse> {
+    return apiClient.put<SalonResponse>(`/salones/${id}`, data).then((r) => r.data);
+  },
+
   activar(id: string): Promise<SalonResponse> {
     return apiClient.patch<SalonResponse>(`/salones/${id}/activar`).then((r) => r.data);
   },
