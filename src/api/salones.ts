@@ -32,6 +32,14 @@ const salonesApi = {
   registrar(data: RegistrarSalonRequest): Promise<SalonResponse> {
     return apiClient.post<SalonResponse>('/salones', data).then((r) => r.data);
   },
+
+  activar(id: string): Promise<SalonResponse> {
+    return apiClient.patch<SalonResponse>(`/salones/${id}/activar`).then((r) => r.data);
+  },
+
+  desactivar(id: string): Promise<SalonResponse> {
+    return apiClient.patch<SalonResponse>(`/salones/${id}/desactivar`).then((r) => r.data);
+  },
 };
 
 export default salonesApi;

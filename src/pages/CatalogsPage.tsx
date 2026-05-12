@@ -335,6 +335,7 @@ const CatalogsPage: React.FC = () => {
         case 'tipo_adicional': await (isActive ? catalogosApi.tiposAdicional.desactivar(id) : catalogosApi.tiposAdicional.activar(id)); break;
         case 'plato': await (isActive ? catalogosApi.platos.desactivar(id) : catalogosApi.platos.activar(id)); break;
         case 'tipo_momento_menu': await (isActive ? catalogosApi.tiposMomentoMenu.desactivar(id) : catalogosApi.tiposMomentoMenu.activar(id)); break;
+        case 'salon': await (isActive ? salonesApi.desactivar(id) : salonesApi.activar(id)); break;
         case 'plato_momento': {
           const [platoId, tipoMomentoId] = id.split('|');
           if (platoId && tipoMomentoId) {
@@ -510,19 +511,17 @@ const CatalogsPage: React.FC = () => {
                                 Editar
                               </button>
                             ) : null}
-                            {!isSalon ? (
-                              <button
-                                type="button"
-                                onClick={() => handleEstado(row.id, isActive)}
-                                className={`px-3 py-1.5 rounded border text-xs font-semibold ${
-                                  isActive
-                                    ? 'border-red-border text-red-text hover:bg-red-bg'
-                                    : 'border-green-border text-green-text hover:bg-green-bg'
-                                }`}
-                              >
-                                {isPlatoMomento ? 'Eliminar' : isActive ? 'Desactivar' : 'Activar'}
-                              </button>
-                            ) : null}
+                            <button
+                              type="button"
+                              onClick={() => handleEstado(row.id, isActive)}
+                              className={`px-3 py-1.5 rounded border text-xs font-semibold ${
+                                isActive
+                                  ? 'border-red-border text-red-text hover:bg-red-bg'
+                                  : 'border-green-border text-green-text hover:bg-green-bg'
+                              }`}
+                            >
+                              {isPlatoMomento ? 'Eliminar' : isActive ? 'Desactivar' : 'Activar'}
+                            </button>
                           </div>
                         </td>
                       </tr>
