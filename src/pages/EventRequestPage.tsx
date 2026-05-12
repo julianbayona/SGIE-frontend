@@ -10,6 +10,7 @@ import eventosApi from '@/api/eventos';
 import salonesApi from '@/api/salones';
 import type { CatalogoBasicoResponse, ClienteResponse, SalonResponse } from '@/api/types';
 import ClientFormModal, { type ClientFormValues } from '@/features/clients/components/ClientFormModal';
+import { FORM_LIMITS, limitText, numberInputValue, onlyDigits, selectInputText } from '@/utils/formLimits';
 
 const labelClass = 'text-[0.68rem] font-black uppercase tracking-[0.22em] text-stone-500';
 const inputClass =
@@ -280,9 +281,10 @@ function EventRequestPage() {
                   <input
                     className={inputClass}
                     placeholder="Ejemplo: 3053984938, Paola Castro..."
+                    maxLength={FORM_LIMITS.mediumText}
                     value={customerQuery}
                     onChange={(event) => {
-                      setCustomerQuery(event.target.value);
+                      setCustomerQuery(limitText(event.target.value, FORM_LIMITS.mediumText));
                       setClienteEncontrado(null);
                     }}
                   />
@@ -394,9 +396,12 @@ function EventRequestPage() {
                   <input
                     type="number"
                     min="1"
+                    max="9999"
+                    inputMode="numeric"
                     className={inputClass}
-                    value={numPersonas}
-                    onChange={(event) => setNumPersonas(event.target.value)}
+                    value={numberInputValue(Number(numPersonas) || 0)}
+                    onFocus={selectInputText}
+                    onChange={(event) => setNumPersonas(onlyDigits(event.target.value, FORM_LIMITS.quantityDigits))}
                   />
                 </div>
                 <div className="space-y-2">

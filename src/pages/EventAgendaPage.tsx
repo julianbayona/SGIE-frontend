@@ -20,6 +20,7 @@ import type {
   SalonResponse,
   CatalogoBasicoResponse,
 } from '@/api/types';
+import { FORM_LIMITS, limitText } from '@/utils/formLimits';
 
 type AgendaCategory = 'degustacion' | 'anticipo';
 type AgendaStatus = 'programado' | 'enviado' | 'completado' | 'cancelado';
@@ -668,7 +669,8 @@ const EventAgendaPage: React.FC = () => {
               className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
               type="text"
               value={newMilestone}
-              onChange={(eventTarget) => setNewMilestone(eventTarget.target.value)}
+              maxLength={FORM_LIMITS.shortText}
+              onChange={(eventTarget) => setNewMilestone(limitText(eventTarget.target.value, FORM_LIMITS.shortText))}
               disabled={isCancelled}
             />
           </div>
@@ -704,8 +706,9 @@ const EventAgendaPage: React.FC = () => {
             <textarea
               className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm min-h-[86px]"
               value={newNotes}
+              maxLength={FORM_LIMITS.longText}
               placeholder="Detalle opcional para el equipo..."
-              onChange={(eventTarget) => setNewNotes(eventTarget.target.value)}
+              onChange={(eventTarget) => setNewNotes(limitText(eventTarget.target.value, FORM_LIMITS.longText))}
               disabled={isCancelled}
             ></textarea>
           </div>

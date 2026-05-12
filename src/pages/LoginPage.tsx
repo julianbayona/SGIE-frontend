@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { FORM_LIMITS, limitText } from '@/utils/formLimits';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -73,7 +74,8 @@ const LoginPage: React.FC = () => {
                 id="nombre"
                 type="text"
                 value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
+                maxLength={FORM_LIMITS.username}
+                onChange={(e) => setNombre(limitText(e.target.value, FORM_LIMITS.username))}
                 className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary-gold focus:border-transparent"
                 placeholder="Ingresa tu nombre de usuario"
                 disabled={isLoading}
@@ -89,7 +91,8 @@ const LoginPage: React.FC = () => {
                 id="contrasena"
                 type="password"
                 value={contrasena}
-                onChange={(e) => setContrasena(e.target.value)}
+                maxLength={FORM_LIMITS.password}
+                onChange={(e) => setContrasena(limitText(e.target.value, FORM_LIMITS.password))}
                 className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary-gold focus:border-transparent"
                 placeholder="Ingresa tu contraseña"
                 disabled={isLoading}

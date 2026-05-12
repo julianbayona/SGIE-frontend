@@ -22,6 +22,7 @@ import type {
   TipoMomentoMenuResponse,
 } from '@/api/types';
 import { formatShortId } from '@/utils/formatters';
+import { FORM_LIMITS, limitText, numberInputValue, selectInputText, toLimitedNumber } from '@/utils/formLimits';
 
 interface ItemLocal {
   localId: string;
@@ -553,8 +554,13 @@ const EventMenuPage: React.FC = () => {
                         className={fieldClass}
                         type="number"
                         min={1}
-                        value={addCantidad}
-                        onChange={(eventTarget) => setAddCantidad(Number(eventTarget.target.value) || 1)}
+                        max={9999}
+                        inputMode="numeric"
+                        value={numberInputValue(addCantidad)}
+                        onFocus={selectInputText}
+                        onChange={(eventTarget) =>
+                          setAddCantidad(toLimitedNumber(eventTarget.target.value, FORM_LIMITS.quantityDigits, 1))
+                        }
                         disabled={isCancelled}
                       />
                     </div>
@@ -564,8 +570,11 @@ const EventMenuPage: React.FC = () => {
                         className={fieldClass}
                         type="text"
                         value={addExcepciones}
+                        maxLength={FORM_LIMITS.mediumText}
                         placeholder="Ej: sin cebolla, vegetariano, sin gluten"
-                        onChange={(eventTarget) => setAddExcepciones(eventTarget.target.value)}
+                        onChange={(eventTarget) =>
+                          setAddExcepciones(limitText(eventTarget.target.value, FORM_LIMITS.mediumText))
+                        }
                         disabled={isCancelled}
                       />
                     </div>
@@ -649,12 +658,15 @@ const EventMenuPage: React.FC = () => {
                                 className={fieldClass}
                                 type="number"
                                 min={1}
-                                value={item.cantidad}
+                                max={9999}
+                                inputMode="numeric"
+                                value={numberInputValue(item.cantidad)}
+                                onFocus={selectInputText}
                                 onChange={(eventTarget) =>
                                   actualizarCantidad(
                                     seleccion.tipoMomentoId,
                                     item.localId,
-                                    Number(eventTarget.target.value),
+                                    toLimitedNumber(eventTarget.target.value, FORM_LIMITS.quantityDigits, 1),
                                   )
                                 }
                                 disabled={isCancelled}
@@ -666,12 +678,13 @@ const EventMenuPage: React.FC = () => {
                                 className={fieldClass}
                                 type="text"
                                 value={item.excepciones}
+                                maxLength={FORM_LIMITS.mediumText}
                                 placeholder="Sin observaciones"
                                 onChange={(eventTarget) =>
                                   actualizarExcepciones(
                                     seleccion.tipoMomentoId,
                                     item.localId,
-                                    eventTarget.target.value,
+                                    limitText(eventTarget.target.value, FORM_LIMITS.mediumText),
                                   )
                                 }
                                 disabled={isCancelled}
@@ -701,8 +714,9 @@ const EventMenuPage: React.FC = () => {
             <textarea
               className="mt-4 min-h-[130px] w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm outline-none focus:border-[#A8841C] focus:ring-2 focus:ring-[#A8841C]/15"
               value={notasGenerales}
+              maxLength={FORM_LIMITS.longText}
               placeholder="Ej: menu infantil, personas vegetarianas, alergias"
-              onChange={(eventTarget) => setNotasGenerales(eventTarget.target.value)}
+              onChange={(eventTarget) => setNotasGenerales(limitText(eventTarget.target.value, FORM_LIMITS.longText))}
               disabled={isCancelled}
             />
           </section>

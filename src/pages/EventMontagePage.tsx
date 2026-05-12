@@ -20,6 +20,7 @@ import type {
   ClienteResponse,
   SalonResponse,
 } from '@/api/types';
+import { FORM_LIMITS, numberInputValue, selectInputText, toLimitedNumber } from '@/utils/formLimits';
 
 interface InfrastructureItem {
   id: string;
@@ -517,8 +518,13 @@ const EventMontagePage: React.FC = () => {
                     className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#A8841C] focus:ring-2 focus:ring-[#A8841C]/15"
                     type="number"
                     min={1}
-                    value={peoplePerTable}
-                    onChange={(eventTarget) => setPeoplePerTable(Number(eventTarget.target.value) || 0)}
+                    max={9999}
+                    inputMode="numeric"
+                    value={numberInputValue(peoplePerTable)}
+                    onFocus={selectInputText}
+                    onChange={(eventTarget) =>
+                      setPeoplePerTable(toLimitedNumber(eventTarget.target.value, FORM_LIMITS.quantityDigits))
+                    }
                     disabled={isCancelled}
                   />
                 </div>
@@ -529,8 +535,13 @@ const EventMontagePage: React.FC = () => {
                     className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#A8841C] focus:ring-2 focus:ring-[#A8841C]/15"
                     type="number"
                     min={1}
-                    value={tableCount}
-                    onChange={(eventTarget) => setTableCount(Number(eventTarget.target.value) || 0)}
+                    max={9999}
+                    inputMode="numeric"
+                    value={numberInputValue(tableCount)}
+                    onFocus={selectInputText}
+                    onChange={(eventTarget) =>
+                      setTableCount(toLimitedNumber(eventTarget.target.value, FORM_LIMITS.quantityDigits))
+                    }
                     disabled={isCancelled}
                   />
                 </div>
@@ -666,9 +677,15 @@ const EventMontagePage: React.FC = () => {
                               className="w-20 rounded-xl border border-stone-300 bg-[#fbf8f2] px-2 py-1.5 text-right text-sm outline-none focus:border-[#A8841C] focus:ring-2 focus:ring-[#A8841C]/15"
                               type="number"
                               min={1}
-                              value={item.quantity}
+                              max={9999}
+                              inputMode="numeric"
+                              value={numberInputValue(item.quantity)}
+                              onFocus={selectInputText}
                               onChange={(eventTarget) =>
-                                updateAdditionalQuantity(item.id, Number(eventTarget.target.value))
+                                updateAdditionalQuantity(
+                                  item.id,
+                                  toLimitedNumber(eventTarget.target.value, FORM_LIMITS.quantityDigits, 1),
+                                )
                               }
                               disabled={isCancelled}
                             />

@@ -1,6 +1,7 @@
 import React from 'react';
 import PageTitle from '@/components/ui/PageTitle';
 import type { ClientsTab } from '@/features/clients/types';
+import { FORM_LIMITS, limitText } from '@/utils/formLimits';
 
 interface ClientsHeaderProps {
   activeTab: ClientsTab;
@@ -65,7 +66,8 @@ const ClientsHeader: React.FC<ClientsHeaderProps> = ({
             className="w-full rounded-xl border border-stone-300 bg-white py-2 pl-10 pr-3 text-sm font-semibold focus:border-[#A8841C] focus:ring-1 focus:ring-[#A8841C]/20"
             placeholder="Buscar por cedula, nombre o telefono"
             value={searchQuery}
-            onChange={(event) => onSearchChange(event.target.value)}
+            maxLength={FORM_LIMITS.mediumText}
+            onChange={(event) => onSearchChange(limitText(event.target.value, FORM_LIMITS.mediumText))}
           />
         </div>
       </div>

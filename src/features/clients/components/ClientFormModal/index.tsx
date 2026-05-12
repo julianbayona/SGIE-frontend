@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { Client, ClientCategory } from '@/features/clients/types';
+import { FORM_LIMITS, limitText, onlyDigits } from '@/utils/formLimits';
 
 export interface ClientFormValues {
   idNumber: string;
@@ -26,7 +27,7 @@ const getEmptyForm = (): ClientFormValues => ({
   email: '',
 });
 
-const normalizeId = (value: string): string => value.replace(/[^\d]/g, '');
+const normalizeId = (value: string): string => onlyDigits(value, FORM_LIMITS.idNumber);
 
 const inputClass =
   'w-full bg-white border border-border rounded-md px-3 py-2.5 text-sm focus:border-gold focus:ring-1 focus:ring-gold/20 disabled:bg-stone-100 disabled:text-stone-500';
@@ -103,6 +104,7 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
                   className={inputClass}
                   type="text"
                   inputMode="numeric"
+                  maxLength={FORM_LIMITS.idNumber}
                   placeholder="Sin puntos ni comas"
                   value={form.idNumber}
                   disabled={mode === 'edit'}
@@ -126,12 +128,13 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
                 <input
                   className={inputClass}
                   type="text"
+                  maxLength={FORM_LIMITS.name}
                   placeholder="Nombres y apellidos"
                   value={form.fullName}
                   onChange={(eventTarget) => {
                     setForm((prev) => ({
                       ...prev,
-                      fullName: eventTarget.target.value,
+                      fullName: limitText(eventTarget.target.value, FORM_LIMITS.name),
                     }));
                   }}
                 />
@@ -165,11 +168,13 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
                   className={inputClass}
                   type="text"
                   placeholder="Número WhatsApp"
+                  inputMode="tel"
+                  maxLength={FORM_LIMITS.phone}
                   value={form.phone}
                   onChange={(eventTarget) => {
                     setForm((prev) => ({
                       ...prev,
-                      phone: eventTarget.target.value,
+                      phone: onlyDigits(eventTarget.target.value, FORM_LIMITS.phone),
                     }));
                   }}
                 />
@@ -180,12 +185,13 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
                 <input
                   className={inputClass}
                   type="email"
+                  maxLength={FORM_LIMITS.email}
                   placeholder="correo@ejemplo.com"
                   value={form.email}
                   onChange={(eventTarget) => {
                     setForm((prev) => ({
                       ...prev,
-                      email: eventTarget.target.value,
+                      email: limitText(eventTarget.target.value, FORM_LIMITS.email),
                     }));
                   }}
                 />

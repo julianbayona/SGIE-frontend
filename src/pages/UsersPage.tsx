@@ -4,6 +4,7 @@ import type { RolUsuario } from '@/api/auth';
 import PageTitle from '@/components/ui/PageTitle';
 import { useToast } from '@/components/ui/ToastProvider';
 import { formatShortId } from '@/utils/formatters';
+import { FORM_LIMITS, limitText } from '@/utils/formLimits';
 
 const roles: RolUsuario[] = ['ADMINISTRADOR', 'GERENTE', 'TESORERO', 'JEFE_MESA'];
 
@@ -119,7 +120,8 @@ const UsersPage: React.FC = () => {
               <input
                 className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-semibold normal-case tracking-normal text-stone-900 focus:border-[#A8841C] focus:ring-[#A8841C]/20"
                 value={nombre}
-                onChange={(event) => setNombre(event.target.value)}
+                maxLength={FORM_LIMITS.username}
+                onChange={(event) => setNombre(limitText(event.target.value, FORM_LIMITS.username))}
                 placeholder="Ejemplo: paola.castro"
               />
             </label>
@@ -130,7 +132,8 @@ const UsersPage: React.FC = () => {
                 className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-semibold normal-case tracking-normal text-stone-900 focus:border-[#A8841C] focus:ring-[#A8841C]/20"
                 type="password"
                 value={contrasena}
-                onChange={(event) => setContrasena(event.target.value)}
+                maxLength={FORM_LIMITS.password}
+                onChange={(event) => setContrasena(limitText(event.target.value, FORM_LIMITS.password))}
                 placeholder="Minimo 6 caracteres"
               />
             </label>

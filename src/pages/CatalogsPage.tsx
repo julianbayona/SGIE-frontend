@@ -15,6 +15,7 @@ import type {
   PlatoMomentoResponse,
 } from '@/api/types';
 import { formatShortId } from '@/utils/formatters';
+import { FORM_LIMITS, limitText, numberInputValue, selectInputText, toLimitedNumber } from '@/utils/formLimits';
 
 type CatalogKey =
   | 'tipo_evento'
@@ -589,7 +590,8 @@ const CatalogsPage: React.FC = () => {
                   className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                   type="text"
                   value={formNombre}
-                  onChange={(e) => setFormNombre(e.target.value)}
+                  maxLength={FORM_LIMITS.name}
+                  onChange={(e) => setFormNombre(limitText(e.target.value, FORM_LIMITS.name))}
                   placeholder="Nombre del registro"
                 />
               </div>
@@ -602,7 +604,8 @@ const CatalogsPage: React.FC = () => {
                   className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                   type="text"
                   value={formDescripcion}
-                  onChange={(e) => setFormDescripcion(e.target.value)}
+                  maxLength={FORM_LIMITS.mediumText}
+                  onChange={(e) => setFormDescripcion(limitText(e.target.value, FORM_LIMITS.mediumText))}
                   placeholder="Opcional"
                 />
               </div>
@@ -616,8 +619,11 @@ const CatalogsPage: React.FC = () => {
                     className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                     type="number"
                     min={1}
-                    value={formCapacidad}
-                    onChange={(e) => setFormCapacidad(Number(e.target.value) || 0)}
+                    max={9999}
+                    inputMode="numeric"
+                    value={numberInputValue(formCapacidad)}
+                    onFocus={selectInputText}
+                    onChange={(e) => setFormCapacidad(toLimitedNumber(e.target.value, FORM_LIMITS.quantityDigits))}
                   />
                 </div>
                 <div>
@@ -626,7 +632,8 @@ const CatalogsPage: React.FC = () => {
                     className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                     type="text"
                     value={formDescripcion}
-                    onChange={(e) => setFormDescripcion(e.target.value)}
+                    maxLength={FORM_LIMITS.mediumText}
+                    onChange={(e) => setFormDescripcion(limitText(e.target.value, FORM_LIMITS.mediumText))}
                     placeholder="Opcional"
                   />
                 </div>
@@ -647,7 +654,8 @@ const CatalogsPage: React.FC = () => {
                     className="flex-1 bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                     type="text"
                     value={formCodigoHex}
-                    onChange={(e) => setFormCodigoHex(e.target.value)}
+                    maxLength={7}
+                    onChange={(e) => setFormCodigoHex(limitText(e.target.value, 7))}
                     placeholder="#C9A46A"
                   />
                 </div>
@@ -691,8 +699,11 @@ const CatalogsPage: React.FC = () => {
                     className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                     type="number"
                     min={0}
-                    value={formPrecioBase}
-                    onChange={(e) => setFormPrecioBase(Number(e.target.value) || 0)}
+                    max={999999999}
+                    inputMode="numeric"
+                    value={numberInputValue(formPrecioBase)}
+                    onFocus={selectInputText}
+                    onChange={(e) => setFormPrecioBase(toLimitedNumber(e.target.value, FORM_LIMITS.moneyDigits))}
                   />
                 </div>
               </>
@@ -706,7 +717,8 @@ const CatalogsPage: React.FC = () => {
                     className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                     type="text"
                     value={formDescripcion}
-                    onChange={(e) => setFormDescripcion(e.target.value)}
+                    maxLength={FORM_LIMITS.mediumText}
+                    onChange={(e) => setFormDescripcion(limitText(e.target.value, FORM_LIMITS.mediumText))}
                     placeholder="Opcional"
                   />
                 </div>
@@ -716,8 +728,11 @@ const CatalogsPage: React.FC = () => {
                     className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                     type="number"
                     min={0}
-                    value={formPrecioBase}
-                    onChange={(e) => setFormPrecioBase(Number(e.target.value) || 0)}
+                    max={999999999}
+                    inputMode="numeric"
+                    value={numberInputValue(formPrecioBase)}
+                    onFocus={selectInputText}
+                    onChange={(e) => setFormPrecioBase(toLimitedNumber(e.target.value, FORM_LIMITS.moneyDigits))}
                   />
                 </div>
               </>

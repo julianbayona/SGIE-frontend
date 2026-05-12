@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FORM_LIMITS, limitText } from '@/utils/formLimits';
 
 interface CancelEventModalProps {
   open: boolean;
@@ -67,9 +68,9 @@ const CancelEventModal: React.FC<CancelEventModalProps> = ({
             Motivo de cancelacion
             <textarea
               value={motivo}
-              onChange={(event) => setMotivo(event.target.value)}
+              onChange={(event) => setMotivo(limitText(event.target.value, FORM_LIMITS.longText))}
               rows={5}
-              maxLength={500}
+              maxLength={FORM_LIMITS.longText}
               disabled={submitting}
               autoFocus
               placeholder="Ejemplo: El cliente solicito cancelar por cambio de fecha."
@@ -82,7 +83,7 @@ const CancelEventModal: React.FC<CancelEventModalProps> = ({
               Este motivo quedara guardado en el historial del evento.
             </span>
             <span className="text-xs font-semibold text-on-surface-variant">
-              {motivo.length}/500
+              {motivo.length}/{FORM_LIMITS.longText}
             </span>
           </div>
 

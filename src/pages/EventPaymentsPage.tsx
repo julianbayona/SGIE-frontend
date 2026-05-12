@@ -12,6 +12,7 @@ import { estadoEventoToEventStatus } from '@/features/events/utils/eventStatus';
 import pagosApi from '@/api/pagos';
 import type { EventoResponse, ClienteResponse, SalonResponse, CatalogoBasicoResponse } from '@/api/types';
 import { formatShortId } from '@/utils/formatters';
+import { FORM_LIMITS, limitText, numberInputValue, selectInputText, toLimitedNumber } from '@/utils/formLimits';
 
 interface PaymentRecord {
   id: string;
@@ -346,7 +347,8 @@ const EventPaymentsPage: React.FC = () => {
                 className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                 type="text"
                 value={newConcept}
-                onChange={(eventTarget) => setNewConcept(eventTarget.target.value)}
+                maxLength={FORM_LIMITS.shortText}
+                onChange={(eventTarget) => setNewConcept(limitText(eventTarget.target.value, FORM_LIMITS.shortText))}
                 disabled={isCancelled}
               />
             </div>
@@ -372,8 +374,13 @@ const EventPaymentsPage: React.FC = () => {
                 className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                 type="number"
                 min={0}
-                value={newAmount}
-                onChange={(eventTarget) => setNewAmount(Math.max(0, Number(eventTarget.target.value) || 0))}
+                max={999999999}
+                inputMode="numeric"
+                value={numberInputValue(newAmount)}
+                onFocus={selectInputText}
+                onChange={(eventTarget) =>
+                  setNewAmount(Math.max(0, toLimitedNumber(eventTarget.target.value, FORM_LIMITS.moneyDigits)))
+                }
                 disabled={isCancelled}
               />
               <p className="text-xs text-on-surface-variant mt-2">

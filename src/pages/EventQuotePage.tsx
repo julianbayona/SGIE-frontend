@@ -20,6 +20,7 @@ import type {
 } from '@/api/types';
 import type { QuoteStatus } from '@/features/quotes/types';
 import { formatShortId } from '@/utils/formatters';
+import { FORM_LIMITS, numberInputValue, selectInputText, toLimitedNumber } from '@/utils/formLimits';
 
 const estadoMap: Record<EstadoCotizacion, QuoteStatus> = {
   BORRADOR: 'Borrador',
@@ -566,9 +567,17 @@ const EventQuotePage: React.FC = () => {
                             type="number"
                             min={0}
                             step={1000}
-                            value={item.unitAdjustedPrice}
+                            max={999999999}
+                            inputMode="numeric"
+                            value={numberInputValue(item.unitAdjustedPrice)}
+                            onFocus={selectInputText}
                             disabled={!canEditPrices}
-                            onChange={(eventTarget) => updateAdjustedPrice(item.id, Number(eventTarget.target.value))}
+                            onChange={(eventTarget) =>
+                              updateAdjustedPrice(
+                                item.id,
+                                toLimitedNumber(eventTarget.target.value, FORM_LIMITS.moneyDigits),
+                              )
+                            }
                           />
                         </td>
                         <td className="px-6 py-4 text-right font-semibold text-on-surface">
@@ -592,10 +601,11 @@ const EventQuotePage: React.FC = () => {
                   type="number"
                   min={0}
                   max={100}
-                  value={advancePercent}
+                  inputMode="numeric"
+                  value={numberInputValue(advancePercent)}
+                  onFocus={selectInputText}
                   onChange={(eventTarget) => {
-                    const next = Number(eventTarget.target.value);
-                    const normalized = Number.isNaN(next) ? 0 : next;
+                    const normalized = toLimitedNumber(eventTarget.target.value, FORM_LIMITS.percentDigits);
                     setAdvancePercent(Math.min(100, Math.max(0, normalized)));
                   }}
                 />
