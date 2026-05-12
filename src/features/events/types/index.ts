@@ -12,6 +12,7 @@ export type EventsTab = 'Todos' | 'Activos' | 'Pendientes' | 'Confirmados' | 'Ca
 
 export interface EventRecord {
   id: string;
+  sortDate: string;
   dateLabel: string;
   clientName: string;
   clientDocument: string;

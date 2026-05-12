@@ -320,19 +320,19 @@ const CatalogsPage: React.FC = () => {
     }
   };
 
-  const handleDesactivar = async (id: string) => {
+  const handleEstado = async (id: string, isActive: boolean) => {
     try {
       switch (activeCatalog) {
-        case 'tipo_evento': await catalogosApi.tiposEvento.desactivar(id); break;
-        case 'tipo_comida': await catalogosApi.tiposComida.desactivar(id); break;
-        case 'tipo_mesa': await catalogosApi.tiposMesa.desactivar(id); break;
-        case 'tipo_silla': await catalogosApi.tiposSilla.desactivar(id); break;
-        case 'mantel': await catalogosApi.manteles.desactivar(id); break;
-        case 'sobremantel': await catalogosApi.sobremanteles.desactivar(id); break;
-        case 'color': await catalogosApi.colores.desactivar(id); break;
-        case 'tipo_adicional': await catalogosApi.tiposAdicional.desactivar(id); break;
-        case 'plato': await catalogosApi.platos.desactivar(id); break;
-        case 'tipo_momento_menu': await catalogosApi.tiposMomentoMenu.desactivar(id); break;
+        case 'tipo_evento': await (isActive ? catalogosApi.tiposEvento.desactivar(id) : catalogosApi.tiposEvento.activar(id)); break;
+        case 'tipo_comida': await (isActive ? catalogosApi.tiposComida.desactivar(id) : catalogosApi.tiposComida.activar(id)); break;
+        case 'tipo_mesa': await (isActive ? catalogosApi.tiposMesa.desactivar(id) : catalogosApi.tiposMesa.activar(id)); break;
+        case 'tipo_silla': await (isActive ? catalogosApi.tiposSilla.desactivar(id) : catalogosApi.tiposSilla.activar(id)); break;
+        case 'mantel': await (isActive ? catalogosApi.manteles.desactivar(id) : catalogosApi.manteles.activar(id)); break;
+        case 'sobremantel': await (isActive ? catalogosApi.sobremanteles.desactivar(id) : catalogosApi.sobremanteles.activar(id)); break;
+        case 'color': await (isActive ? catalogosApi.colores.desactivar(id) : catalogosApi.colores.activar(id)); break;
+        case 'tipo_adicional': await (isActive ? catalogosApi.tiposAdicional.desactivar(id) : catalogosApi.tiposAdicional.activar(id)); break;
+        case 'plato': await (isActive ? catalogosApi.platos.desactivar(id) : catalogosApi.platos.activar(id)); break;
+        case 'tipo_momento_menu': await (isActive ? catalogosApi.tiposMomentoMenu.desactivar(id) : catalogosApi.tiposMomentoMenu.activar(id)); break;
         case 'plato_momento': {
           const [platoId, tipoMomentoId] = id.split('|');
           if (platoId && tipoMomentoId) {
@@ -345,8 +345,8 @@ const CatalogsPage: React.FC = () => {
 
       await loadCatalog(activeCatalog);
       toast.success(
-        activeCatalog === 'plato_momento' ? 'Relacion eliminada' : 'Estado actualizado',
-        `${activeTab.label}: el cambio quedo aplicado correctamente.`,
+        activeCatalog === 'plato_momento' ? 'Relacion eliminada' : isActive ? 'Registro desactivado' : 'Registro activado',
+        `${activeTab.label}: el cambio quedó aplicado correctamente.`,
       );
     } catch (err) {
       toast.error('No fue posible actualizar el registro', err instanceof Error ? err.message : undefined);
@@ -511,7 +511,7 @@ const CatalogsPage: React.FC = () => {
                             {!isSalon ? (
                               <button
                                 type="button"
-                                onClick={() => handleDesactivar(row.id)}
+                                onClick={() => handleEstado(row.id, isActive)}
                                 className={`px-3 py-1.5 rounded border text-xs font-semibold ${
                                   isActive
                                     ? 'border-red-border text-red-text hover:bg-red-bg'

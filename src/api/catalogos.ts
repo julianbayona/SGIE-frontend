@@ -36,6 +36,9 @@ function makeCatalogoBasico(path: string) {
     desactivar(id: string): Promise<CatalogoBasicoResponse> {
       return apiClient.delete<CatalogoBasicoResponse>(`${path}/${id}`).then((r) => r.data);
     },
+    activar(id: string): Promise<CatalogoBasicoResponse> {
+      return apiClient.patch<CatalogoBasicoResponse>(`${path}/${id}/activar`).then((r) => r.data);
+    },
   };
 }
 
@@ -61,6 +64,9 @@ const catalogosApi = {
     desactivar(id: string): Promise<ColorResponse> {
       return apiClient.delete<ColorResponse>(`/catalogos/colores/${id}`).then((r) => r.data);
     },
+    activar(id: string): Promise<ColorResponse> {
+      return apiClient.patch<ColorResponse>(`/catalogos/colores/${id}/activar`).then((r) => r.data);
+    },
   },
 
   manteles: {
@@ -79,6 +85,9 @@ const catalogosApi = {
     desactivar(id: string): Promise<MantelResponse> {
       return apiClient.delete<MantelResponse>(`/catalogos/manteles/${id}`).then((r) => r.data);
     },
+    activar(id: string): Promise<MantelResponse> {
+      return apiClient.patch<MantelResponse>(`/catalogos/manteles/${id}/activar`).then((r) => r.data);
+    },
   },
 
   sobremanteles: {
@@ -96,6 +105,9 @@ const catalogosApi = {
     },
     desactivar(id: string): Promise<SobremantelResponse> {
       return apiClient.delete<SobremantelResponse>(`/catalogos/sobremanteles/${id}`).then((r) => r.data);
+    },
+    activar(id: string): Promise<SobremantelResponse> {
+      return apiClient.patch<SobremantelResponse>(`/catalogos/sobremanteles/${id}/activar`).then((r) => r.data);
     },
   },
 
@@ -123,6 +135,11 @@ const catalogosApi = {
     desactivar(id: string): Promise<TipoAdicionalResponse> {
       return apiClient
         .delete<TipoAdicionalResponse>(`/catalogos/tipos-adicional/${id}`)
+        .then((r) => r.data);
+    },
+    activar(id: string): Promise<TipoAdicionalResponse> {
+      return apiClient
+        .patch<TipoAdicionalResponse>(`/catalogos/tipos-adicional/${id}/activar`)
         .then((r) => r.data);
     },
   },
@@ -153,6 +170,11 @@ const catalogosApi = {
         .delete<PlatoResponse>(`/catalogos/platos/${id}`)
         .then((r) => r.data);
     },
+    activar(id: string): Promise<PlatoResponse> {
+      return apiClient
+        .patch<PlatoResponse>(`/catalogos/platos/${id}/activar`)
+        .then((r) => r.data);
+    },
   },
 
   tiposMomentoMenu: {
@@ -179,6 +201,11 @@ const catalogosApi = {
     desactivar(id: string): Promise<TipoMomentoMenuResponse> {
       return apiClient
         .delete<TipoMomentoMenuResponse>(`/catalogos/tipos-momento-menu/${id}`)
+        .then((r) => r.data);
+    },
+    activar(id: string): Promise<TipoMomentoMenuResponse> {
+      return apiClient
+        .patch<TipoMomentoMenuResponse>(`/catalogos/tipos-momento-menu/${id}/activar`)
         .then((r) => r.data);
     },
   },

@@ -9,6 +9,7 @@ import cotizacionesApi from '@/api/cotizaciones';
 import type { QuoteRecord, QuoteStatus, QuotesTab } from '@/features/quotes/types';
 import type { EstadoCotizacion } from '@/api/types';
 import { formatShortId } from '@/utils/formatters';
+import { paginate } from '@/utils/pagination';
 
 const estadoMap: Record<EstadoCotizacion, QuoteStatus> = {
   BORRADOR: 'Borrador',
@@ -17,6 +18,13 @@ const estadoMap: Record<EstadoCotizacion, QuoteStatus> = {
   ACEPTADA: 'Aceptada',
   RECHAZADA: 'Rechazada',
   DESACTUALIZADA: 'Desactualizada',
+};
+
+const pendingStatusRank: Partial<Record<QuoteStatus, number>> = {
+  Enviada: 0,
+  Generada: 1,
+  Borrador: 2,
+  Desactualizada: 3,
 };
 
 const formatCurrency = (value: number) =>
@@ -50,7 +58,7 @@ const QuotesPage: React.FC = () => {
           eventos.map(async (evento) => ({
             evento,
             cotizaciones: await cotizacionesApi.listarPorEvento(evento.id).catch(() => []),
-          }))
+          })),
         );
 
         if (cancelled) return;
@@ -59,17 +67,19 @@ const QuotesPage: React.FC = () => {
           cotizacionesPorEvento.flatMap(({ evento, cotizaciones }) => {
             const cliente = clientesMap.get(evento.clienteId);
             const tipoEvento = tiposEventoMap.get(evento.tipoEventoId);
+
             return cotizaciones.map((cotizacion) => ({
               id: cotizacion.id,
+              sortDate: evento.fechaHoraInicio,
               eventName: `${tipoEvento?.nombre ?? 'Evento'} - ${new Date(evento.fechaHoraInicio).toLocaleDateString('es-CO')}`,
-              eventMeta: evento.id,
+              eventMeta: formatShortId(evento.id, 'EV-'),
               customerName: cliente?.nombreCompleto ?? 'Cliente desconocido',
               customerType: cliente?.tipoCliente === 'SOCIO' ? 'Socio' : 'No Socio',
-              createdAt: cotizacion.vigente ? 'Vigente' : `Historica ${formatShortId(cotizacion.reservaId, 'RES-')}`,
+              createdAt: cotizacion.vigente ? 'Vigente' : `Histórica ${formatShortId(cotizacion.reservaId, 'RES-')}`,
               totalValue: formatCurrency(Number(cotizacion.valorTotal)),
               status: estadoMap[cotizacion.estado],
             }));
-          })
+          }),
         );
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Error al cargar cotizaciones.');
@@ -84,24 +94,27 @@ const QuotesPage: React.FC = () => {
   }, []);
 
   const visibleQuotes = useMemo(() => {
-    if (activeTab === 'Aprobadas') return quotes.filter((q) => q.status === 'Aceptada');
-    if (activeTab === 'Pendientes')
-      return quotes.filter((q) =>
-        ['Enviada', 'Borrador', 'Desactualizada'].includes(q.status)
-      );
-    return quotes;
+    const filtered = quotes.filter((quote) => {
+      if (activeTab === 'Aprobadas') return quote.status === 'Aceptada';
+      if (activeTab === 'Pendientes') return ['Enviada', 'Generada', 'Borrador', 'Desactualizada'].includes(quote.status);
+      return true;
+    });
+
+    return [...filtered].sort((a, b) => {
+      if (activeTab === 'Pendientes') {
+        const statusDiff = (pendingStatusRank[a.status] ?? 99) - (pendingStatusRank[b.status] ?? 99);
+        if (statusDiff !== 0) return statusDiff;
+      }
+
+      return new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime();
+    });
   }, [activeTab, quotes]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
 
-  const totalPages = Math.ceil(visibleQuotes.length / PAGE_SIZE);
-  const safeCurrentPage = Math.min(currentPage, totalPages || 1);
-  const pageStart = (safeCurrentPage - 1) * PAGE_SIZE;
-  const paginatedQuotes = visibleQuotes.slice(pageStart, pageStart + PAGE_SIZE);
-  const from = visibleQuotes.length === 0 ? 0 : pageStart + 1;
-  const to = Math.min(pageStart + PAGE_SIZE, visibleQuotes.length);
+  const pagination = useMemo(() => paginate(visibleQuotes, currentPage, PAGE_SIZE), [currentPage, visibleQuotes]);
 
   return (
     <section className="space-y-6">
@@ -113,9 +126,10 @@ const QuotesPage: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-surface rounded-lg overflow-hidden shadow-sm border border-border">        {loading ? (
+      <div className="bg-surface rounded-lg overflow-hidden shadow-sm border border-border">
+        {loading ? (
           <div className="flex items-center justify-center py-16 text-on-surface-variant text-sm">
-            Cargando cotizaciones…
+            Cargando cotizaciones...
           </div>
         ) : visibleQuotes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant text-sm gap-2">
@@ -123,14 +137,15 @@ const QuotesPage: React.FC = () => {
             <p>No hay cotizaciones registradas.</p>
           </div>
         ) : (
-          <QuotesTable quotes={paginatedQuotes} />
+          <QuotesTable quotes={pagination.items} />
         )}
         <QuotesTablePagination
-          from={from}
-          to={to}
-          total={visibleQuotes.length}
-          currentPage={safeCurrentPage}
-          totalPages={totalPages}
+          entityLabel="cotizaciones"
+          from={pagination.from}
+          to={pagination.to}
+          total={pagination.total}
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
           onPageChange={setCurrentPage}
         />
       </div>

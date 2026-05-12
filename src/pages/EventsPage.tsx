@@ -8,8 +8,9 @@ import eventosApi from '@/api/eventos';
 import clientesApi from '@/api/clientes';
 import salonesApi from '@/api/salones';
 import catalogosApi from '@/api/catalogos';
-import type { EventoResponse, EstadoEvento, ClienteResponse, SalonResponse, CatalogoBasicoResponse } from '@/api/types';
+import type { CatalogoBasicoResponse, ClienteResponse, EstadoEvento, EventoResponse, SalonResponse } from '@/api/types';
 import { formatShortId } from '@/utils/formatters';
+import { paginate } from '@/utils/pagination';
 
 const estadoMap: Record<EstadoEvento, EventStatus> = {
   PENDIENTE: 'Pendiente',
@@ -29,16 +30,24 @@ const nextActionMap: Record<EstadoEvento, string> = {
   CANCELADO: 'Sin acciones pendientes',
 };
 
+const PENDING_STATUSES: EventStatus[] = [
+  'Pendiente',
+  'Esperando selección de menú',
+  'Cotización enviada',
+  'Cotización aprobada',
+  'Pendiente anticipo',
+];
+
 const PAGE_SIZE = 7;
 
 function toEventRecord(
-  e: EventoResponse,
+  evento: EventoResponse,
   clientes: Map<string, ClienteResponse>,
   salones: Map<string, SalonResponse>,
-  tiposEvento: Map<string, CatalogoBasicoResponse>
+  tiposEvento: Map<string, CatalogoBasicoResponse>,
 ): EventRecord {
-  const reservaVigente = e.reservas.find((r) => r.vigente);
-  const inicio = new Date(e.fechaHoraInicio);
+  const reservaVigente = evento.reservas.find((reserva) => reserva.vigente);
+  const inicio = new Date(evento.fechaHoraInicio);
   const dateLabel = new Intl.DateTimeFormat('es-CO', {
     day: '2-digit',
     month: 'short',
@@ -47,11 +56,10 @@ function toEventRecord(
     minute: '2-digit',
   }).format(inicio);
 
-  const cliente = clientes.get(e.clienteId);
+  const cliente = clientes.get(evento.clienteId);
   const salon = reservaVigente ? salones.get(reservaVigente.salonId) : null;
-  const tipoEvento = tiposEvento.get(e.tipoEventoId);
+  const tipoEvento = tiposEvento.get(evento.tipoEventoId);
 
-  // Obtener iniciales del cliente
   const getInitials = (name: string): string => {
     const parts = name.trim().split(/\s+/);
     const first = parts[0] ?? '';
@@ -63,16 +71,17 @@ function toEventRecord(
   };
 
   return {
-    id: e.id,
+    id: evento.id,
+    sortDate: evento.fechaHoraInicio,
     dateLabel,
     clientName: cliente?.nombreCompleto ?? 'Cliente desconocido',
-    clientDocument: cliente?.cedula ?? formatShortId(e.clienteId, 'CLI-'),
+    clientDocument: cliente?.cedula ?? formatShortId(evento.clienteId, 'CLI-'),
     clientInitials: cliente ? getInitials(cliente.nombreCompleto) : '??',
     hall: salon?.nombre ?? 'Sin salón',
     eventKind: (tipoEvento?.nombre ?? 'Social') as EventRecord['eventKind'],
-    status: estadoMap[e.estado] ?? 'Pendiente',
-    isActive: e.estado !== 'CANCELADO',
-    nextAction: nextActionMap[e.estado] ?? '',
+    status: estadoMap[evento.estado] ?? 'Pendiente',
+    isActive: evento.estado !== 'CANCELADO',
+    nextAction: nextActionMap[evento.estado] ?? '',
   };
 }
 
@@ -86,12 +95,12 @@ const EventsPage: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
+
     (async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Cargar todos los datos en paralelo
         const [eventosData, clientesData, salonesData, tiposEventoData] = await Promise.all([
           eventosApi.listar(),
           clientesApi.listar(),
@@ -101,47 +110,49 @@ const EventsPage: React.FC = () => {
 
         if (cancelled) return;
 
-        // Crear mapas para búsqueda rápida
-        const clientesMap = new Map(clientesData.map(c => [c.id, c]));
-        const salonesMap = new Map(salonesData.map(s => [s.id, s]));
-        const tiposEventoMap = new Map(tiposEventoData.map(t => [t.id, t]));
+        const clientesMap = new Map(clientesData.map((cliente) => [cliente.id, cliente]));
+        const salonesMap = new Map(salonesData.map((salon) => [salon.id, salon]));
+        const tiposEventoMap = new Map(tiposEventoData.map((tipo) => [tipo.id, tipo]));
 
-        // Enriquecer eventos con datos de catálogos
-        const enrichedEvents = eventosData.map(e => 
-          toEventRecord(e, clientesMap, salonesMap, tiposEventoMap)
-        );
-
-        setEvents(enrichedEvents);
+        setEvents(eventosData.map((evento) => toEventRecord(evento, clientesMap, salonesMap, tiposEventoMap)));
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Error al cargar eventos.');
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const visibleEvents = useMemo(() => {
-    if (activeTab === 'Activos') return events.filter((e) => e.isActive && e.status !== 'Cancelado');
-    if (activeTab === 'Pendientes')
-      return events.filter((e) =>
-        ['Pendiente', 'Esperando selección de menú', 'Cotización enviada', 'Cotización aprobada', 'Pendiente anticipo'].includes(e.status)
-      );
-    if (activeTab === 'Confirmados') return events.filter((e) => e.status === 'Confirmado');
-    if (activeTab === 'Cancelados') return events.filter((e) => e.status === 'Cancelado');
-    return events;
+    const filtered = events.filter((event) => {
+      if (activeTab === 'Activos') return event.isActive && event.status !== 'Cancelado';
+      if (activeTab === 'Pendientes') return PENDING_STATUSES.includes(event.status);
+      if (activeTab === 'Confirmados') return event.status === 'Confirmado';
+      if (activeTab === 'Cancelados') return event.status === 'Cancelado';
+      return true;
+    });
+
+    const now = Date.now();
+    return [...filtered].sort((a, b) => {
+      const aTime = new Date(a.sortDate).getTime();
+      const bTime = new Date(b.sortDate).getTime();
+      const aPast = aTime < now;
+      const bPast = bTime < now;
+
+      if (aPast !== bPast) return aPast ? 1 : -1;
+      return aPast ? bTime - aTime : aTime - bTime;
+    });
   }, [activeTab, events]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
 
-  const totalPages = Math.ceil(visibleEvents.length / PAGE_SIZE);
-  const safeCurrentPage = Math.min(currentPage, totalPages || 1);
-  const pageStart = (safeCurrentPage - 1) * PAGE_SIZE;
-  const paginatedEvents = visibleEvents.slice(pageStart, pageStart + PAGE_SIZE);
-  const from = visibleEvents.length === 0 ? 0 : pageStart + 1;
-  const to = Math.min(pageStart + PAGE_SIZE, visibleEvents.length);
+  const pagination = useMemo(() => paginate(visibleEvents, currentPage, PAGE_SIZE), [currentPage, visibleEvents]);
 
   return (
     <section className="space-y-6">
@@ -156,20 +167,21 @@ const EventsPage: React.FC = () => {
       <div className="bg-surface rounded-lg shadow-sm overflow-hidden border border-border">
         {loading ? (
           <div className="flex items-center justify-center py-16 text-on-surface-variant text-sm">
-            Cargando eventos…
+            Cargando eventos...
           </div>
         ) : (
           <EventsTable
-            events={paginatedEvents}
+            events={pagination.items}
             onViewEvent={(eventId) => navigate(`/events/${eventId}`)}
           />
         )}
         <EventsTablePagination
-          from={from}
-          to={to}
-          total={visibleEvents.length}
-          currentPage={safeCurrentPage}
-          totalPages={totalPages}
+          entityLabel="eventos"
+          from={pagination.from}
+          to={pagination.to}
+          total={pagination.total}
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
           onPageChange={setCurrentPage}
         />
       </div>

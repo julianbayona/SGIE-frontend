@@ -8,6 +8,7 @@ import clientesApi from '@/api/clientes';
 import type { ClienteResponse } from '@/api/types';
 import { useToast } from '@/components/ui/ToastProvider';
 import { formatShortId } from '@/utils/formatters';
+import { paginate } from '@/utils/pagination';
 
 /** Convierte la respuesta del backend al tipo que usa el frontend. */
 function toClient(c: ClienteResponse): Client {
@@ -119,23 +120,20 @@ const ClientsPage: React.FC = () => {
   };
 
   const visibleClients = useMemo(() => {
-    return clients.filter((c) => {
-      if (activeTab === 'Socios') return c.category === 'Socio';
-      if (activeTab === 'No Socios') return c.category === 'No Socio';
-      return true;
-    });
+    return clients
+      .filter((c) => {
+        if (activeTab === 'Socios') return c.category === 'Socio';
+        if (activeTab === 'No Socios') return c.category === 'No Socio';
+        return true;
+      })
+      .sort((a, b) => a.fullName.localeCompare(b.fullName, 'es-CO', { sensitivity: 'base' }));
   }, [activeTab, clients]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab, searchQuery]);
 
-  const totalPages = Math.ceil(visibleClients.length / PAGE_SIZE);
-  const safeCurrentPage = Math.min(currentPage, totalPages || 1);
-  const pageStart = (safeCurrentPage - 1) * PAGE_SIZE;
-  const paginatedClients = visibleClients.slice(pageStart, pageStart + PAGE_SIZE);
-  const from = visibleClients.length === 0 ? 0 : pageStart + 1;
-  const to = Math.min(pageStart + PAGE_SIZE, visibleClients.length);
+  const pagination = useMemo(() => paginate(visibleClients, currentPage, PAGE_SIZE), [currentPage, visibleClients]);
 
   return (
     <section className="space-y-6 relative isolate min-h-[calc(100vh-10rem)]">
@@ -159,14 +157,15 @@ const ClientsPage: React.FC = () => {
             Cargando clientes…
           </div>
         ) : (
-          <ClientsTable clients={paginatedClients} onEditClient={openEditForm} />
+          <ClientsTable clients={pagination.items} onEditClient={openEditForm} />
         )}
         <ClientsTablePagination
-          from={from}
-          to={to}
-          total={visibleClients.length}
-          currentPage={safeCurrentPage}
-          totalPages={totalPages}
+          entityLabel="clientes"
+          from={pagination.from}
+          to={pagination.to}
+          total={pagination.total}
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
           onPageChange={setCurrentPage}
         />
       </div>
