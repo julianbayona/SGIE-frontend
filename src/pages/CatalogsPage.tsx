@@ -598,7 +598,7 @@ const CatalogsPage: React.FC = () => {
               </div>
             )}
 
-            {!isSalon && !isTipoAdicional && !isTipoMomentoMenu && !isTextil && !isColor && !isPlatoMomento ? (
+            {!isSalon && !isTipoAdicional && !isTipoMomentoMenu && !isTextil && !isColor && !isPlato && !isPlatoMomento ? (
               <div>
                 <label className="block text-xs font-bold text-neutral-700 mb-2">Descripcion</label>
                 <input

@@ -58,13 +58,6 @@ const EventTableRow: React.FC<EventTableRowProps> = ({ event, onViewEvent }) => 
           >
             Ver evento
           </button>
-          <button
-            type="button"
-            className="p-1.5 hover:bg-panel rounded text-text3 hover:text-gold transition-colors"
-            title="Más acciones"
-          >
-            <span className="material-symbols-outlined text-lg">more_horiz</span>
-          </button>
         </div>
       </td>
     </tr>
