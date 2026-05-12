@@ -272,7 +272,12 @@ const EventPaymentsPage: React.FC = () => {
 
   return (
     <section className="space-y-8 pb-24">
-      <EventDetailHeaderTabs event={event} activeTab="pagos" onEventCancelled={setEvento} />
+      <EventDetailHeaderTabs
+        event={event}
+        activeTab="pagos"
+        onEventCancelled={setEvento}
+        onEventUpdated={setEvento}
+      />
 
       {isCancelled && (
         <EventCancelledNotice detail="Los pagos quedan disponibles solo para consulta. No se pueden registrar nuevos anticipos o abonos en un evento cancelado." />

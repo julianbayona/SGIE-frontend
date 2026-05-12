@@ -37,6 +37,7 @@ interface AdditionalItem {
   selected: boolean;
   quantity: number;
   basePrice: number;
+  active: boolean;
 }
 
 const currencyFormatter = new Intl.NumberFormat('es-CO', {
@@ -148,17 +149,18 @@ const EventMontagePage: React.FC = () => {
         if (mantelesActivos.length > 0) setClothType(mantelesActivos[0]!.id);
         if (sobremantelesActivos.length > 0) setTopClothType(sobremantelesActivos[0]!.id);
 
-        setAdditionalItems(
-          adicionalesActivos.map((item) => ({
-            id: `adicional-${item.id}`,
-            tipoAdicionalId: item.id,
-            name: item.nombre,
-            billingType: item.modoCobro,
-            selected: false,
-            quantity: 1,
-            basePrice: Number(item.precioBase),
-          }))
-        );
+        const toAdditionalItem = (item: (typeof adicionalesData)[number], selected = false, quantity = 1): AdditionalItem => ({
+          id: `adicional-${item.id}`,
+          tipoAdicionalId: item.id,
+          name: item.nombre,
+          billingType: item.modoCobro,
+          selected,
+          quantity,
+          basePrice: Number(item.precioBase),
+          active: item.activo,
+        });
+
+        setAdditionalItems(adicionalesActivos.map((item) => toAdditionalItem(item)));
 
         const reservaId = reservaActual.reservaRaizId || reservaActual.id;
 
@@ -182,21 +184,36 @@ const EventMontagePage: React.FC = () => {
               { id: 'espacio_bombas', name: 'Espacio bombas', selected: montaje.infraestructura.estanteBombas },
             ]);
 
-            setAdditionalItems((prev) =>
-              prev.map((item) => {
-                const adicionalExistente = montaje.adicionales.find(
-                  (adicional) => adicional.tipoAdicionalId === item.tipoAdicionalId
-                );
+            setAdditionalItems(() => {
+              const adicionalesSeleccionados = new Map(
+                montaje.adicionales.map((adicional) => [adicional.tipoAdicionalId, adicional])
+              );
+              const activos = adicionalesActivos.map((item) => {
+                const adicionalExistente = adicionalesSeleccionados.get(item.id);
+                return toAdditionalItem(item, Boolean(adicionalExistente), adicionalExistente?.cantidad ?? 1);
+              });
+              const activosIds = new Set(activos.map((item) => item.tipoAdicionalId));
+              const inactivosSeleccionados = montaje.adicionales
+                .filter((adicional) => !activosIds.has(adicional.tipoAdicionalId))
+                .map((adicional) => {
+                  const catalogo = adicionalesData.find((item) => item.id === adicional.tipoAdicionalId);
+                  if (!catalogo) {
+                    return {
+                      id: `adicional-${adicional.tipoAdicionalId}`,
+                      tipoAdicionalId: adicional.tipoAdicionalId,
+                      name: formatShortId(adicional.tipoAdicionalId, 'ADI-'),
+                      billingType: 'SERVICIO' as const,
+                      selected: true,
+                      quantity: adicional.cantidad,
+                      basePrice: 0,
+                      active: false,
+                    };
+                  }
+                  return toAdditionalItem(catalogo, true, adicional.cantidad);
+                });
 
-                if (!adicionalExistente) return item;
-
-                return {
-                  ...item,
-                  selected: true,
-                  quantity: adicionalExistente.cantidad,
-                };
-              })
-            );
+              return [...activos, ...inactivosSeleccionados];
+            });
           }
         } catch {
           // Sin montaje guardado todavía
@@ -438,7 +455,12 @@ const EventMontagePage: React.FC = () => {
 
   return (
     <section className="space-y-7 pb-32">
-      <EventDetailHeaderTabs event={event} activeTab="montaje" onEventCancelled={setEvento} />
+      <EventDetailHeaderTabs
+        event={event}
+        activeTab="montaje"
+        onEventCancelled={setEvento}
+        onEventUpdated={setEvento}
+      />
 
       {isCancelled && (
         <EventCancelledNotice detail="El montaje queda disponible solo para consulta historica. No se pueden cambiar mesas, textiles, infraestructura o adicionales." />
@@ -670,7 +692,16 @@ const EventMontagePage: React.FC = () => {
                   <tbody className="divide-y divide-stone-200 bg-white">
                     {additionalItems.map((item) => (
                       <tr key={item.id}>
-                        <td className="px-5 py-3 font-semibold text-on-surface">{item.name}</td>
+                        <td className="px-5 py-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-semibold text-on-surface">{item.name}</span>
+                            {!item.active ? (
+                              <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-800">
+                                Adicional inactivo
+                              </span>
+                            ) : null}
+                          </div>
+                        </td>
                         <td className="px-5 py-3 text-sm text-on-surface-variant">
                           {item.billingType === 'SERVICIO' ? 'Por servicio' : 'Por unidad'}
                         </td>
@@ -690,7 +721,7 @@ const EventMontagePage: React.FC = () => {
                                   toLimitedNumber(eventTarget.target.value, FORM_LIMITS.quantityDigits, 1),
                                 )
                               }
-                              disabled={isCancelled}
+                              disabled={isCancelled || !item.active}
                             />
                           ) : (
                             <span className="text-sm text-on-surface-variant">1 servicio</span>
@@ -705,7 +736,7 @@ const EventMontagePage: React.FC = () => {
                             type="checkbox"
                             checked={item.selected}
                             onChange={(eventTarget) => updateAdditionalSelection(item.id, eventTarget.target.checked)}
-                            disabled={isCancelled}
+                            disabled={isCancelled || !item.active}
                           />
                         </td>
                       </tr>
@@ -783,7 +814,14 @@ const EventMontagePage: React.FC = () => {
                   return (
                     <div key={item.id} className="flex items-start justify-between gap-3 text-sm">
                       <div>
-                        <p className="font-semibold text-on-surface">{item.name}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold text-on-surface">{item.name}</p>
+                          {!item.active ? (
+                            <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-800">
+                              Inactivo
+                            </span>
+                          ) : null}
+                        </div>
                         <p className="text-xs text-on-surface-variant">
                           {item.billingType === 'UNIDAD' ? `${item.quantity} unidades` : '1 servicio'}
                         </p>

@@ -29,6 +29,7 @@ interface ItemLocal {
   platoId: string;
   platoNombre: string;
   precioBase: number;
+  platoActivo: boolean;
   cantidad: number;
   excepciones: string;
 }
@@ -110,7 +111,9 @@ const EventMenuPage: React.FC = () => {
         if (momentosActivos.length > 0) {
           const primerMomentoId = momentosActivos[0]!.id;
           const primerPlatoAsociado = platoMomentosApiData.find(
-            (relacion) => relacion.tipoMomentoId === primerMomentoId,
+            (relacion) =>
+              relacion.tipoMomentoId === primerMomentoId &&
+              platosActivos.some((plato) => plato.id === relacion.platoId),
           );
           setAddMomentoId(primerMomentoId);
           setAddPlatoId(primerPlatoAsociado?.platoId ?? '');
@@ -145,12 +148,13 @@ const EventMenuPage: React.FC = () => {
               menuExistente.selecciones.map((seleccion) => ({
                 tipoMomentoId: seleccion.tipoMomentoId,
                 items: seleccion.items.map((item) => {
-                  const plato = platosActivos.find((candidate) => candidate.id === item.platoId);
+                  const plato = platosApiData.find((candidate) => candidate.id === item.platoId);
                   return {
                     localId: uid(),
                     platoId: item.platoId,
                     platoNombre: plato?.nombre ?? formatShortId(item.platoId, 'PLA-'),
                     precioBase: plato?.precioBase ?? 0,
+                    platoActivo: plato?.activo ?? false,
                     cantidad: item.cantidad,
                     excepciones: item.excepciones ?? '',
                   };
@@ -237,6 +241,7 @@ const EventMenuPage: React.FC = () => {
       platoId: plato.id,
       platoNombre: plato.nombre,
       precioBase: Number(plato.precioBase),
+      platoActivo: true,
       cantidad: Math.max(1, addCantidad),
       excepciones: addExcepciones.trim(),
     };
@@ -386,7 +391,12 @@ const EventMenuPage: React.FC = () => {
 
   return (
     <section className="space-y-7 pb-32">
-      <EventDetailHeaderTabs event={event} activeTab="menu" onEventCancelled={setEvento} />
+      <EventDetailHeaderTabs
+        event={event}
+        activeTab="menu"
+        onEventCancelled={setEvento}
+        onEventUpdated={setEvento}
+      />
 
       {isCancelled && (
         <EventCancelledNotice detail="El menu queda disponible solo para consulta historica. No se pueden agregar, quitar o guardar platos en un evento cancelado." />
@@ -603,7 +613,14 @@ const EventMenuPage: React.FC = () => {
                         <div key={item.localId} className="rounded-xl border border-stone-200 bg-[#fbf8f2] p-4">
                           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                             <div className="min-w-0">
-                              <p className="font-black text-stone-950">{item.platoNombre}</p>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-black text-stone-950">{item.platoNombre}</p>
+                                {!item.platoActivo ? (
+                                  <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-800">
+                                    Plato inactivo
+                                  </span>
+                                ) : null}
+                              </div>
                               <p className="mt-1 text-sm font-semibold text-[#A8841C]">
                                 {formatCurrency(item.precioBase)} base
                               </p>

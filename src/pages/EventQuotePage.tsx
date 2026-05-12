@@ -252,6 +252,9 @@ const EventQuotePage: React.FC = () => {
 
       const cotizacionActualizada = await cotizacionesApi.enviar(cotizacion.id);
       setCotizacion(cotizacionActualizada);
+      if (evento) {
+        setEvento(await eventosApi.obtenerPorId(evento.id));
+      }
       toast.success('Cotizacion marcada como enviada', 'La cotizacion cambio al estado ENVIADA.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al enviar cotizacion';
@@ -310,33 +313,14 @@ const EventQuotePage: React.FC = () => {
       setError(null);
       const cotizacionActualizada = await cotizacionesApi.aceptar(cotizacion.id);
       setCotizacion(cotizacionActualizada);
+      if (evento) {
+        setEvento(await eventosApi.obtenerPorId(evento.id));
+      }
       toast.success('Cotizacion aceptada', 'El evento ya puede continuar al flujo de confirmacion.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al aceptar cotizacion';
       setError(message);
       toast.error('No fue posible aceptar la cotizacion', message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleConfirmarEvento = async () => {
-    if (!evento) return;
-    if (isCancelled) {
-      setError('No se puede confirmar un evento cancelado.');
-      return;
-    }
-
-    try {
-      setSaving(true);
-      setError(null);
-      const eventoConfirmado = await eventosApi.confirmar(evento.id);
-      setEvento(eventoConfirmado);
-      toast.success('Evento confirmado', 'Se dispararon las operaciones de notificacion y Google Calendar.');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al confirmar evento';
-      setError(message);
-      toast.error('No fue posible confirmar el evento', message);
     } finally {
       setSaving(false);
     }
@@ -402,10 +386,15 @@ const EventQuotePage: React.FC = () => {
   if (!cotizacion) {
     return (
       <section className="space-y-8 pb-28">
-        <EventDetailHeaderTabs event={event} activeTab="cotizacion" onEventCancelled={setEvento} />
+        <EventDetailHeaderTabs
+          event={event}
+          activeTab="cotizacion"
+          onEventCancelled={setEvento}
+          onEventUpdated={setEvento}
+        />
 
         {isCancelled && (
-          <EventCancelledNotice detail="Las cotizaciones de este evento quedan disponibles solo para consulta. No se pueden generar borradores, enviar, aceptar o confirmar." />
+          <EventCancelledNotice detail="Las cotizaciones de este evento quedan disponibles solo para consulta. No se pueden generar borradores, enviar o aceptar." />
         )}
 
         {error && (
@@ -447,10 +436,15 @@ const EventQuotePage: React.FC = () => {
 
   return (
     <section className="space-y-8 pb-28">
-      <EventDetailHeaderTabs event={event} activeTab="cotizacion" onEventCancelled={setEvento} />
+      <EventDetailHeaderTabs
+        event={event}
+        activeTab="cotizacion"
+        onEventCancelled={setEvento}
+        onEventUpdated={setEvento}
+      />
 
       {isCancelled && (
-        <EventCancelledNotice detail="La cotizacion queda en modo consulta. No se pueden ajustar precios, enviar, aceptar, confirmar o crear nuevas versiones." />
+        <EventCancelledNotice detail="La cotizacion queda en modo consulta. No se pueden ajustar precios, enviar, aceptar o crear nuevas versiones." />
       )}
 
       {error && (
@@ -762,14 +756,6 @@ const EventQuotePage: React.FC = () => {
             Aceptar
           </button>
 
-          <button
-            className="flex-1 rounded-md bg-[#191C1D] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
-            type="button"
-            onClick={handleConfirmarEvento}
-            disabled={isCancelled || saving || cotizacion.estado !== 'ACEPTADA' || evento?.estado === 'CONFIRMADO'}
-          >
-            {isCancelled ? 'Evento cancelado' : 'Confirmar'}
-          </button>
         </div>
       </footer>
     </section>

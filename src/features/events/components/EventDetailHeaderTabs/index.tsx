@@ -23,6 +23,7 @@ interface EventDetailHeaderTabsProps {
   event: EventSummaryData;
   activeTab: EventDetailTab;
   onEventCancelled?: (evento: EventoResponse) => void;
+  onEventUpdated?: (evento: EventoResponse) => void;
 }
 
 const tabs: Array<{ key: EventDetailTab; label: string; getPath: (eventId: string) => string }> = [
@@ -41,6 +42,7 @@ const EventDetailHeaderTabs: React.FC<EventDetailHeaderTabsProps> = ({
   event,
   activeTab,
   onEventCancelled,
+  onEventUpdated,
 }) => {
   const navigate = useNavigate();
   const { hasRole } = useAuth();
@@ -48,11 +50,16 @@ const EventDetailHeaderTabs: React.FC<EventDetailHeaderTabsProps> = ({
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [creatorName, setCreatorName] = useState<string | null>(null);
 
   const isCancelled = event.status === 'Cancelado';
+  const isConfirmed = event.status === 'Confirmado';
   const isAdmin = hasRole('ADMINISTRADOR');
+  const canConfirmByRole = hasRole(['ADMINISTRADOR', 'GERENTE', 'TESORERO']);
+  const canConfirmByState = event.status.toLowerCase().includes('aprobada') || event.status === 'Pendiente anticipo';
   const canCancel = isAdmin && !isCancelled;
+  const canConfirm = canConfirmByRole && canConfirmByState && !isConfirmed && !isCancelled;
   const displayedCreator =
     creatorName ?? event.createdBy ?? (event.creatorId ? formatShortId(event.creatorId, 'USR-') : 'Sin usuario asociado');
 
@@ -110,6 +117,22 @@ const EventDetailHeaderTabs: React.FC<EventDetailHeaderTabsProps> = ({
     }
   };
 
+  const handleConfirm = async () => {
+    if (!canConfirm || confirming) return;
+
+    try {
+      setConfirming(true);
+      const actualizado = await eventosApi.confirmar(event.id);
+      onEventUpdated?.(actualizado);
+      toast.success('Evento confirmado', 'Se dispararon las operaciones de notificacion y Google Calendar.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No fue posible confirmar el evento.';
+      toast.error('No fue posible confirmar el evento', message);
+    } finally {
+      setConfirming(false);
+    }
+  };
+
   return (
     <>
       <section className="overflow-hidden rounded-2xl border border-stone-300 bg-[linear-gradient(135deg,#fbf8f1_0%,#efe4cf_62%,#d9c17b_100%)] shadow-xl shadow-stone-900/5">
@@ -156,6 +179,20 @@ const EventDetailHeaderTabs: React.FC<EventDetailHeaderTabsProps> = ({
                 <span className="material-symbols-outlined align-middle text-lg text-[#A8841C]">edit</span>
                 <span className="ml-2">Editar</span>
               </button>
+              {canConfirmByRole && !isCancelled && !isConfirmed ? (
+                <button
+                  type="button"
+                  onClick={handleConfirm}
+                  disabled={!canConfirm || confirming}
+                  className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  title={canConfirm ? 'Confirmar evento' : 'El evento requiere una cotizacion aprobada para confirmarse'}
+                >
+                  <span className="material-symbols-outlined align-middle text-lg">
+                    {confirming ? 'progress_activity' : 'check_circle'}
+                  </span>
+                  <span className="ml-2">{confirming ? 'Confirmando...' : 'Confirmar evento'}</span>
+                </button>
+              ) : null}
               {isAdmin ? (
                 <button
                   type="button"

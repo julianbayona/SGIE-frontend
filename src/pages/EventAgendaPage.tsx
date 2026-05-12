@@ -421,7 +421,12 @@ const EventAgendaPage: React.FC = () => {
 
   return (
     <section className="space-y-8 pb-24">
-      <EventDetailHeaderTabs event={event} activeTab="agenda" onEventCancelled={setEvento} />
+      <EventDetailHeaderTabs
+        event={event}
+        activeTab="agenda"
+        onEventCancelled={setEvento}
+        onEventUpdated={setEvento}
+      />
 
       {isCancelled && (
         <EventCancelledNotice detail="La agenda queda disponible para monitoreo. No se pueden crear nuevas pruebas de plato ni recordatorios de anticipo para un evento cancelado." />

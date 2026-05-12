@@ -142,7 +142,12 @@ const EventSummaryPage: React.FC = () => {
 
   return (
     <section className="space-y-7 pb-28">
-      <EventDetailHeaderTabs event={event} activeTab="summary" onEventCancelled={setEvento} />
+      <EventDetailHeaderTabs
+        event={event}
+        activeTab="summary"
+        onEventCancelled={setEvento}
+        onEventUpdated={setEvento}
+      />
 
       {isCancelled && (
         <EventCancelledNotice detail="Este evento queda disponible solo para consulta historica. Las acciones operativas estan bloqueadas." />
