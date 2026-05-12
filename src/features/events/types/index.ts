@@ -14,6 +14,7 @@ export interface EventRecord {
   id: string;
   sortDate: string;
   dateLabel: string;
+  rawDate: string;
   clientName: string;
   clientDocument: string;
   clientInitials: string;
