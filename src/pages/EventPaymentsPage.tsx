@@ -10,7 +10,7 @@ import cotizacionesApi from '@/api/cotizaciones';
 import { useToast } from '@/components/ui/ToastProvider';
 import { estadoEventoToEventStatus } from '@/features/events/utils/eventStatus';
 import pagosApi from '@/api/pagos';
-import type { EventoResponse, ClienteResponse, SalonResponse, CatalogoBasicoResponse } from '@/api/types';
+import type { EventoResponse, ClienteResponse, SalonResponse, CatalogoBasicoResponse, AnticipoResponse } from '@/api/types';
 import { formatShortId } from '@/utils/formatters';
 
 interface PaymentRecord {
@@ -29,6 +29,19 @@ const formatCurrency = (value: number): string => {
     maximumFractionDigits: 0,
   }).format(value);
 };
+
+const toPaymentRecord = (anticipo: AnticipoResponse): PaymentRecord => ({
+  id: anticipo.id,
+  date: new Date(anticipo.fechaPago).toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }),
+  concept: anticipo.observaciones ?? 'Anticipo',
+  method: anticipo.metodoPago,
+  amount: Number(anticipo.valor),
+  registeredBy: formatShortId(anticipo.usuarioId, 'USR-'),
+});
 
 const EventPaymentsPage: React.FC = () => {
   const { eventId } = useParams();
@@ -93,40 +106,27 @@ const EventPaymentsPage: React.FC = () => {
         setSalon(salonData);
 
         try {
-          const cotizacion = await cotizacionesApi.obtenerVigentePorEvento(eventId);
-          const estadoFinanciero = await pagosApi.estadoFinanciero(eventId);
+          const [cotizacion, estadoFinanciero] = await Promise.all([
+            cotizacionesApi.obtenerVigentePorEvento(eventId),
+            pagosApi.estadoFinanciero(eventId),
+          ]);
           if (cancelled) {
             return;
           }
 
           setCotizacionId(cotizacion.id);
           setTotalEventAmount(Number(estadoFinanciero.valorTotal) || Number(cotizacion.valorTotal) || 0);
-
-          const anticipos = await pagosApi.listarAnticipos(cotizacion.id);
-          if (cancelled) {
-            return;
-          }
-
-          setPayments(
-            anticipos.map((anticipo) => ({
-              id: anticipo.id,
-              date: new Date(anticipo.fechaPago).toLocaleDateString('es-CO', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              }),
-              concept: anticipo.observaciones ?? 'Anticipo',
-              method: anticipo.metodoPago,
-              amount: Number(anticipo.valor),
-              registeredBy: formatShortId(anticipo.usuarioId, 'USR-'),
-            }))
-          );
         } catch {
           setCotizacionId('');
           setTotalEventAmount(0);
-          setPayments([]);
           setPaymentWarning('Aun no hay cotizacion vigente para registrar anticipos en este evento.');
         }
+
+        const anticipos = await pagosApi.listarAnticiposPorEvento(eventId);
+        if (cancelled) {
+          return;
+        }
+        setPayments(anticipos.map(toPaymentRecord));
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Error al cargar pagos');
@@ -211,25 +211,13 @@ const EventPaymentsPage: React.FC = () => {
       });
 
       if (eventId) {
-        const estadoFinanciero = await pagosApi.estadoFinanciero(eventId);
+        const [estadoFinanciero, anticipos] = await Promise.all([
+          pagosApi.estadoFinanciero(eventId),
+          pagosApi.listarAnticiposPorEvento(eventId),
+        ]);
         setTotalEventAmount(Number(estadoFinanciero.valorTotal) || totalEventAmount);
+        setPayments(anticipos.map(toPaymentRecord));
       }
-
-      setPayments((prev) => [
-        ...prev,
-        {
-          id: anticipo.id,
-          date: new Date(anticipo.fechaPago).toLocaleDateString('es-CO', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-          }),
-          concept: anticipo.observaciones ?? newConcept.trim(),
-          method: anticipo.metodoPago,
-          amount: Number(anticipo.valor),
-          registeredBy: formatShortId(anticipo.usuarioId, 'USR-'),
-        },
-      ]);
 
       setNewAmount(0);
       setNewDate('');

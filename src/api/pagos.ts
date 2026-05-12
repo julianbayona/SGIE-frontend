@@ -14,6 +14,12 @@ const pagosApi = {
       .then((r) => r.data);
   },
 
+  listarAnticiposPorEvento(eventoId: string): Promise<AnticipoResponse[]> {
+    return apiClient
+      .get<AnticipoResponse[]>(`/eventos/${eventoId}/anticipos`)
+      .then((r) => r.data);
+  },
+
   registrarAnticipo(
     cotizacionId: string,
     data: RegistrarAnticipoRequest
