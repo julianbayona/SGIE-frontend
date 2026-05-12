@@ -5,13 +5,17 @@ import ClientsTablePagination from '@/features/clients/components/ClientsTablePa
 import ClientFormModal, { type ClientFormValues } from '@/features/clients/components/ClientFormModal';
 import type { Client, ClientsTab } from '@/features/clients/types';
 import clientesApi from '@/api/clientes';
+import usuariosApi, { type UsuarioResponse } from '@/api/usuarios';
 import type { ClienteResponse } from '@/api/types';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/ToastProvider';
 import { formatShortId } from '@/utils/formatters';
 import { paginate } from '@/utils/pagination';
 
 /** Convierte la respuesta del backend al tipo que usa el frontend. */
-function toClient(c: ClienteResponse): Client {
+function toClient(c: ClienteResponse, usuarios = new Map<string, UsuarioResponse>()): Client {
+  const creador = c.creadoPor ? usuarios.get(c.creadoPor) : null;
+
   return {
     id: c.id,
     idNumber: c.cedula,
@@ -21,6 +25,7 @@ function toClient(c: ClienteResponse): Client {
     category: c.tipoCliente === 'SOCIO' ? 'Socio' : 'No Socio',
     status: c.activo ? 'Activo' : 'Suspendido',
     registeredAt: formatShortId(c.id, 'CLI-'),
+    createdBy: creador?.nombre ?? (c.creadoPor ? formatShortId(c.creadoPor, 'USR-') : 'Sin usuario asociado'),
   };
 }
 
@@ -28,6 +33,7 @@ const PAGE_SIZE = 7;
 
 const ClientsPage: React.FC = () => {
   const toast = useToast();
+  const { user } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,8 +50,12 @@ const ClientsPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await clientesApi.listar(searchQuery.trim() || undefined);
-        if (!cancelled) setClients(data.map(toClient));
+        const [clientes, usuarios] = await Promise.all([
+          clientesApi.listar(searchQuery.trim() || undefined),
+          usuariosApi.listar().catch(() => []),
+        ]);
+        const usuariosMap = new Map(usuarios.map((usuario) => [usuario.id, usuario]));
+        if (!cancelled) setClients(clientes.map((cliente) => toClient(cliente, usuariosMap)));
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Error al cargar clientes.');
       } finally {
@@ -97,7 +107,7 @@ const ClientsPage: React.FC = () => {
           correo: values.email,
           tipoCliente: values.category === 'Socio' ? 'SOCIO' : 'NO_SOCIO',
         });
-        setClients((prev) => prev.map((c) => (c.id === editingClientId ? toClient(actualizado) : c)));
+        setClients((prev) => prev.map((c) => (c.id === editingClientId ? { ...c, ...toClient(actualizado), createdBy: c.createdBy } : c)));
         toast.success('Cliente actualizado', `${actualizado.nombreCompleto} quedo actualizado correctamente.`);
         closeForm();
         return;
@@ -111,7 +121,7 @@ const ClientsPage: React.FC = () => {
         tipoCliente: values.category === 'Socio' ? 'SOCIO' : 'NO_SOCIO',
       });
 
-      setClients((prev) => [toClient(nuevo), ...prev]);
+      setClients((prev) => [toClient(nuevo, user ? new Map([[user.usuarioId, { id: user.usuarioId, nombre: user.nombre, rol: user.rol, activo: true }]]) : undefined), ...prev]);
       toast.success('Cliente creado', `${nuevo.nombreCompleto} quedo registrado en el sistema.`);
       closeForm();
     } catch (err) {

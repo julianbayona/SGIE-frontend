@@ -15,6 +15,7 @@ const ClientTableRow: React.FC<ClientTableRowProps> = ({ client, onEditClient })
       <td className="px-6 py-4">
         <p className="text-sm font-bold text-text1">{client.idNumber}</p>
         <p className="text-xs text-text3">Cédula</p>
+        <p className="mt-1 text-[11px] font-semibold text-stone-400">Creado por: {client.createdBy}</p>
       </td>
       <td className="px-6 py-4">
         <p className="text-sm font-bold text-text1">{client.fullName}</p>

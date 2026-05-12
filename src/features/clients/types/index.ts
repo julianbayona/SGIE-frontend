@@ -10,6 +10,7 @@ export interface Client {
   category: ClientCategory;
   status: ClientStatus;
   registeredAt: string;
+  createdBy: string;
 }
 
 export type ClientsTab = 'Todos' | 'Socios' | 'No Socios';
