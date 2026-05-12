@@ -15,6 +15,7 @@ const EventsTable: React.FC<EventsTableProps> = ({ events, onViewEvent }) => {
           <tr className="bg-stone-50/70">
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">ID / Fecha</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Cliente</th>
+            <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Creado por</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Salón</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Tipo de Evento</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Estado</th>

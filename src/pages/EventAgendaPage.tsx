@@ -20,6 +20,7 @@ import type {
   SalonResponse,
   CatalogoBasicoResponse,
 } from '@/api/types';
+import { formatShortId } from '@/utils/formatters';
 import { FORM_LIMITS, limitText } from '@/utils/formLimits';
 
 type AgendaCategory = 'degustacion' | 'anticipo';
@@ -256,15 +257,25 @@ const EventAgendaPage: React.FC = () => {
 
     const reserva = evento.reservas.find(r => r.vigente);
     const inicio = new Date(evento.fechaHoraInicio);
+    const fin = new Date(evento.fechaHoraFin);
     
     return {
       id: evento.id,
       title: `${tipoEvento?.nombre || 'Evento'} - ${cliente?.nombreCompleto || 'Cliente'}`,
-      dateLabel: inicio.toLocaleDateString('es-CO'),
-      timeLabel: inicio.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+      dateLabel: inicio.toLocaleDateString('es-CO', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }),
+      timeLabel: `${inicio.toLocaleTimeString('es-CO', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })} - ${fin.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}`,
       status: estadoEventoToEventStatus(evento.estado),
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',
+      createdBy: formatShortId(evento.usuarioCreadorId, 'USR-'),
+      creatorId: evento.usuarioCreadorId,
       eventType: tipoEvento?.nombre || 'Cargando...',
       guests: reserva?.numInvitados || 0,
       venue: salon?.nombre || 'Sin salón',

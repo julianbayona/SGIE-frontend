@@ -18,6 +18,7 @@ export interface EventRecord {
   clientName: string;
   clientDocument: string;
   clientInitials: string;
+  createdBy: string;
   hall: string;
   eventKind: EventKind;
   status: EventStatus;

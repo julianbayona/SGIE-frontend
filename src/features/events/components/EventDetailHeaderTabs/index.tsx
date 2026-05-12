@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import eventosApi from '@/api/eventos';
 import type { EventoResponse } from '@/api/types';
+import usuariosApi from '@/api/usuarios';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,10 +48,35 @@ const EventDetailHeaderTabs: React.FC<EventDetailHeaderTabsProps> = ({
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [creatorName, setCreatorName] = useState<string | null>(null);
 
   const isCancelled = event.status === 'Cancelado';
   const isAdmin = hasRole('ADMINISTRADOR');
   const canCancel = isAdmin && !isCancelled;
+  const displayedCreator =
+    creatorName ?? event.createdBy ?? (event.creatorId ? formatShortId(event.creatorId, 'USR-') : 'Sin usuario asociado');
+
+  useEffect(() => {
+    if (!event.creatorId) {
+      setCreatorName(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    usuariosApi.listar()
+      .then((usuarios) => {
+        if (cancelled) return;
+        setCreatorName(usuarios.find((usuario) => usuario.id === event.creatorId)?.nombre ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setCreatorName(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [event.creatorId]);
 
   const openCancelModal = () => {
     if (!canCancel) return;
@@ -113,6 +139,10 @@ const EventDetailHeaderTabs: React.FC<EventDetailHeaderTabsProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-base text-[#A8841C]">meeting_room</span>
                   {event.venue}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base text-[#A8841C]">person</span>
+                  Creado por: {displayedCreator}
                 </div>
               </div>
             </div>

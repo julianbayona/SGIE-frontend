@@ -371,6 +371,8 @@ const EventQuotePage: React.FC = () => {
       status: estadoEventoToEventStatus(evento.estado),
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',
+      createdBy: formatShortId(evento.usuarioCreadorId, 'USR-'),
+      creatorId: evento.usuarioCreadorId,
       eventType: tipoEvento?.nombre || 'Cargando...',
       guests: reserva?.numInvitados || 0,
       venue: salon?.nombre || 'Sin salón',

@@ -20,6 +20,7 @@ import type {
   ClienteResponse,
   SalonResponse,
 } from '@/api/types';
+import { formatShortId } from '@/utils/formatters';
 import { FORM_LIMITS, numberInputValue, selectInputText, toLimitedNumber } from '@/utils/formLimits';
 
 interface InfrastructureItem {
@@ -366,6 +367,8 @@ const EventMontagePage: React.FC = () => {
       status: estadoEventoToEventStatus(evento.estado),
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',
+      createdBy: formatShortId(evento.usuarioCreadorId, 'USR-'),
+      creatorId: evento.usuarioCreadorId,
       eventType: tipoEvento?.nombre || 'Cargando...',
       guests: reserva?.numInvitados || 0,
       venue: salon?.nombre || 'Sin salón',

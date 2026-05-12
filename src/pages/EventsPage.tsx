@@ -8,6 +8,7 @@ import eventosApi from '@/api/eventos';
 import clientesApi from '@/api/clientes';
 import salonesApi from '@/api/salones';
 import catalogosApi from '@/api/catalogos';
+import usuariosApi, { type UsuarioResponse } from '@/api/usuarios';
 import type { CatalogoBasicoResponse, ClienteResponse, EstadoEvento, EventoResponse, SalonResponse } from '@/api/types';
 import { formatShortId } from '@/utils/formatters';
 import { paginate } from '@/utils/pagination';
@@ -53,6 +54,7 @@ function toEventRecord(
   clientes: Map<string, ClienteResponse>,
   salones: Map<string, SalonResponse>,
   tiposEvento: Map<string, CatalogoBasicoResponse>,
+  usuarios: Map<string, UsuarioResponse>,
 ): EventRecord {
   const reservaVigente = evento.reservas.find((reserva) => reserva.vigente);
   const inicio = new Date(evento.fechaHoraInicio);
@@ -67,6 +69,7 @@ function toEventRecord(
   const cliente = clientes.get(evento.clienteId);
   const salon = reservaVigente ? salones.get(reservaVigente.salonId) : null;
   const tipoEvento = tiposEvento.get(evento.tipoEventoId);
+  const usuarioCreador = usuarios.get(evento.usuarioCreadorId);
 
   const getInitials = (name: string): string => {
     const parts = name.trim().split(/\s+/);
@@ -86,6 +89,7 @@ function toEventRecord(
     clientName: cliente?.nombreCompleto ?? 'Cliente desconocido',
     clientDocument: cliente?.cedula ?? formatShortId(evento.clienteId, 'CLI-'),
     clientInitials: cliente ? getInitials(cliente.nombreCompleto) : '??',
+    createdBy: usuarioCreador?.nombre ?? formatShortId(evento.usuarioCreadorId, 'USR-'),
     hall: salon?.nombre ?? 'Sin salón',
     eventKind: (tipoEvento?.nombre ?? 'Social') as EventRecord['eventKind'],
     status: estadoMap[evento.estado] ?? 'Pendiente',
@@ -110,11 +114,12 @@ const EventsPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [eventosData, clientesData, salonesData, tiposEventoData] = await Promise.all([
+        const [eventosData, clientesData, salonesData, tiposEventoData, usuariosData] = await Promise.all([
           eventosApi.listar(),
           clientesApi.listar(),
           salonesApi.listar(),
           catalogosApi.listarTiposEvento(),
+          usuariosApi.listar(),
         ]);
 
         if (cancelled) return;
@@ -122,8 +127,9 @@ const EventsPage: React.FC = () => {
         const clientesMap = new Map(clientesData.map((cliente) => [cliente.id, cliente]));
         const salonesMap = new Map(salonesData.map((salon) => [salon.id, salon]));
         const tiposEventoMap = new Map(tiposEventoData.map((tipo) => [tipo.id, tipo]));
+        const usuariosMap = new Map(usuariosData.map((usuario) => [usuario.id, usuario]));
 
-        setEvents(eventosData.map((evento) => toEventRecord(evento, clientesMap, salonesMap, tiposEventoMap)));
+        setEvents(eventosData.map((evento) => toEventRecord(evento, clientesMap, salonesMap, tiposEventoMap, usuariosMap)));
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Error al cargar eventos.');
       } finally {
@@ -152,6 +158,7 @@ const EventsPage: React.FC = () => {
         formatShortId(event.id, 'EV-'),
         event.clientName,
         event.clientDocument,
+        event.createdBy,
         event.hall,
         event.eventKind,
         event.status,

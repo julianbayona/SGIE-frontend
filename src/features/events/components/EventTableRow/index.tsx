@@ -28,6 +28,11 @@ const EventTableRow: React.FC<EventTableRowProps> = ({ event, onViewEvent }) => 
         </div>
       </td>
 
+      <td className="px-6 py-4">
+        <p className="text-sm font-semibold text-text1">{event.createdBy}</p>
+        <p className="text-xs text-text3">Usuario creador</p>
+      </td>
+
       <td className="px-6 py-4 text-sm font-medium text-text1">{event.hall}</td>
 
       <td className="px-6 py-4">

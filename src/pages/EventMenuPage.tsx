@@ -10,7 +10,7 @@ import salonesApi from '@/api/salones';
 import { useToast } from '@/components/ui/ToastProvider';
 import EventCancelledNotice from '@/features/events/components/EventCancelledNotice';
 import EventDetailHeaderTabs from '@/features/events/components/EventDetailHeaderTabs';
-import { estadoEventoToEventStatus } from '@/features/events/utils/eventStatus';
+import { buildEventSummaryData } from '@/features/events/data/eventSummary';
 import type {
   CatalogoBasicoResponse,
   ClienteResponse,
@@ -358,40 +358,7 @@ const EventMenuPage: React.FC = () => {
   };
 
   const event = useMemo(() => {
-    if (!evento) {
-      return {
-        id: eventId ?? '',
-        title: 'Cargando...',
-        dateLabel: '',
-        timeLabel: '',
-        status: 'Pendiente' as const,
-        customerName: '',
-        customerPhone: '',
-        eventType: '',
-        guests: 0,
-        venue: '',
-        venueCapacity: '',
-        totalQuote: '$0',
-      };
-    }
-
-    const reserva = evento.reservas.find((item) => item.vigente);
-    const inicio = new Date(evento.fechaHoraInicio);
-
-    return {
-      id: evento.id,
-      title: `${tipoEvento?.nombre ?? 'Evento'} - ${cliente?.nombreCompleto ?? 'Cliente'}`,
-      dateLabel: inicio.toLocaleDateString('es-CO'),
-      timeLabel: inicio.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
-      status: estadoEventoToEventStatus(evento.estado),
-      customerName: cliente?.nombreCompleto ?? 'Cargando...',
-      customerPhone: cliente?.telefono ?? '',
-      eventType: tipoEvento?.nombre ?? 'Cargando...',
-      guests: reserva?.numInvitados ?? 0,
-      venue: salon?.nombre ?? 'Sin salon',
-      venueCapacity: salon ? `Capacidad: ${salon.capacidad} pax` : '',
-      totalQuote: '$0',
-    };
+    return buildEventSummaryData({ evento, eventId, cliente, salon, tipoEvento });
   }, [cliente, eventId, evento, salon, tipoEvento]);
 
   const momentoNombre = (id: string) =>

@@ -15,11 +15,12 @@ import type {
 } from '@/api/types';
 import EventCancelledNotice from '@/features/events/components/EventCancelledNotice';
 import EventDetailHeaderTabs from '@/features/events/components/EventDetailHeaderTabs';
+import { buildEventSummaryData } from '@/features/events/data/eventSummary';
 
 const estadoLabels: Record<EstadoEvento, string> = {
   PENDIENTE: 'Pendiente',
-  COTIZACION_ENVIADA: 'Cotizacion enviada',
-  COTIZACION_APROBADA: 'Cotizacion aprobada',
+  COTIZACION_ENVIADA: 'Cotización enviada',
+  COTIZACION_APROBADA: 'Cotización aprobada',
   PENDIENTE_ANTICIPO: 'Pendiente anticipo',
   CONFIRMADO: 'Confirmado',
   CANCELADO: 'Cancelado',
@@ -106,48 +107,14 @@ const EventSummaryPage: React.FC = () => {
   }, [eventId]);
 
   const event = useMemo(() => {
-    if (!evento) {
-      return {
-        id: eventId || '',
-        title: 'Cargando...',
-        dateLabel: '',
-        timeLabel: '',
-        status: 'Pendiente' as const,
-        customerName: '',
-        customerPhone: '',
-        eventType: '',
-        guests: 0,
-        venue: '',
-        venueCapacity: '',
-        totalQuote: '$0',
-      };
-    }
-
-    const reserva = evento.reservas.find((item) => item.vigente);
-    const inicio = new Date(evento.fechaHoraInicio);
-    const fin = new Date(evento.fechaHoraFin);
-
-    return {
-      id: evento.id,
-      title: `${tipoEvento?.nombre || 'Evento'} - ${cliente?.nombreCompleto || 'Cliente'}`,
-      dateLabel: inicio.toLocaleDateString('es-CO', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      }),
-      timeLabel: `${inicio.toLocaleTimeString('es-CO', {
-        hour: '2-digit',
-        minute: '2-digit',
-      })} - ${fin.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}`,
-      status: estadoLabels[evento.estado] as any,
-      customerName: cliente?.nombreCompleto || 'Cargando...',
-      customerPhone: cliente?.telefono || '',
-      eventType: tipoEvento?.nombre || 'Cargando...',
-      guests: reserva?.numInvitados || 0,
-      venue: salon?.nombre || 'Sin salon',
-      venueCapacity: salon ? `Capacidad: ${salon.capacidad} pax` : '',
+    return buildEventSummaryData({
+      evento,
+      eventId,
+      cliente,
+      salon,
+      tipoEvento,
       totalQuote: formatCurrency(valorTotal),
-    };
+    });
   }, [cliente, evento, eventId, salon, tipoEvento, valorTotal]);
 
   const currentStepIndex = evento ? lifecycleSteps.indexOf(evento.estado) : -1;
