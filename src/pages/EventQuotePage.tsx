@@ -726,7 +726,7 @@ const EventQuotePage: React.FC = () => {
             onClick={handleDescargarDocumento}
             disabled={saving || cotizacion.estado === 'BORRADOR'}
           >
-            Descargar PDF
+            Descargar Excel
           </button>
 
           <button

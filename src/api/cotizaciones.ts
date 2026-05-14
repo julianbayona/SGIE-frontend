@@ -56,7 +56,7 @@ const cotizacionesApi = {
       .then((r) => r.data);
   },
 
-  /** Genera el documento PDF de la cotización. */
+  /** Genera el documento de la cotización. */
   generarDocumento(id: string): Promise<CotizacionResponse> {
     return apiClient
       .patch<CotizacionResponse>(`/cotizaciones/${id}/generar`)
@@ -91,7 +91,7 @@ const cotizacionesApi = {
       .then((r) => r.data);
   },
 
-  /** Descarga el PDF generado en backend. */
+  /** Descarga el Excel generado en backend. */
   async descargarDocumento(id: string): Promise<void> {
     const response = await apiClient.get<Blob>(`/cotizaciones/${id}/documento`, {
       responseType: 'blob',
@@ -99,7 +99,7 @@ const cotizacionesApi = {
     const blobUrl = window.URL.createObjectURL(response.data);
     const link = document.createElement('a');
     link.href = blobUrl;
-    link.download = `cotizacion-${id}.pdf`;
+    link.download = `cotizacion-${id}.xlsx`;
     document.body.appendChild(link);
     link.click();
     link.remove();
