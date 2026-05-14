@@ -346,12 +346,25 @@ const EventQuotePage: React.FC = () => {
 
     const reserva = evento.reservas.find((item) => item.vigente);
     const inicio = new Date(evento.fechaHoraInicio);
+    const fin = new Date(evento.fechaHoraFin);
 
     return {
       id: evento.id,
       title: `${tipoEvento?.nombre || 'Evento'} - ${cliente?.nombreCompleto || 'Cliente'}`,
-      dateLabel: inicio.toLocaleDateString('es-CO'),
-      timeLabel: inicio.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+      dateLabel: `Inicio: ${inicio.toLocaleString('es-CO', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`,
+      timeLabel: `Fin: ${fin.toLocaleString('es-CO', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`,
       status: estadoEventoToEventStatus(evento.estado),
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',

@@ -32,6 +32,15 @@ interface BuildEventSummaryParams {
 
 // Datos hardcodeados eliminados - ahora se obtienen del API
 
+const formatEventDateTime = (date: Date): string =>
+  date.toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
 export const getEventSummaryById = (eventId?: string): EventSummaryData => {
   const normalizedId = eventId ?? 'unknown';
 
@@ -84,15 +93,8 @@ export const buildEventSummaryData = ({
   return {
     id: evento.id,
     title: `${tipoEvento?.nombre || 'Evento'} - ${cliente?.nombreCompleto || 'Cliente'}`,
-    dateLabel: inicio.toLocaleDateString('es-CO', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    }),
-    timeLabel: `${inicio.toLocaleTimeString('es-CO', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })} - ${fin.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}`,
+    dateLabel: `Inicio: ${formatEventDateTime(inicio)}`,
+    timeLabel: `Fin: ${formatEventDateTime(fin)}`,
     status: estadoEventoToEventStatus(evento.estado),
     customerName: cliente?.nombreCompleto || 'Cargando...',
     customerPhone: cliente?.telefono || '',

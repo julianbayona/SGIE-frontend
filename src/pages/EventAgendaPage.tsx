@@ -262,15 +262,20 @@ const EventAgendaPage: React.FC = () => {
     return {
       id: evento.id,
       title: `${tipoEvento?.nombre || 'Evento'} - ${cliente?.nombreCompleto || 'Cliente'}`,
-      dateLabel: inicio.toLocaleDateString('es-CO', {
+      dateLabel: `Inicio: ${inicio.toLocaleString('es-CO', {
         day: '2-digit',
         month: 'long',
         year: 'numeric',
-      }),
-      timeLabel: `${inicio.toLocaleTimeString('es-CO', {
         hour: '2-digit',
         minute: '2-digit',
-      })} - ${fin.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}`,
+      })}`,
+      timeLabel: `Fin: ${fin.toLocaleString('es-CO', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`,
       status: estadoEventoToEventStatus(evento.estado),
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',

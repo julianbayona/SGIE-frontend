@@ -10,7 +10,13 @@ import cotizacionesApi from '@/api/cotizaciones';
 import { useToast } from '@/components/ui/ToastProvider';
 import { estadoEventoToEventStatus } from '@/features/events/utils/eventStatus';
 import pagosApi from '@/api/pagos';
-import type { EventoResponse, ClienteResponse, SalonResponse, CatalogoBasicoResponse } from '@/api/types';
+import type {
+  EventoResponse,
+  ClienteResponse,
+  SalonResponse,
+  CatalogoBasicoResponse,
+  EstadoCotizacion,
+} from '@/api/types';
 import { formatShortId } from '@/utils/formatters';
 import { FORM_LIMITS, limitText, numberInputValue, selectInputText, toLimitedNumber } from '@/utils/formLimits';
 
@@ -31,6 +37,15 @@ const formatCurrency = (value: number): string => {
   }).format(value);
 };
 
+const quoteStateLabel: Record<EstadoCotizacion, string> = {
+  BORRADOR: 'Borrador',
+  GENERADA: 'Generada',
+  ENVIADA: 'Enviada',
+  ACEPTADA: 'Aceptada',
+  RECHAZADA: 'Rechazada',
+  DESACTUALIZADA: 'Desactualizada',
+};
+
 const EventPaymentsPage: React.FC = () => {
   const { eventId } = useParams();
   const toast = useToast();
@@ -40,6 +55,7 @@ const EventPaymentsPage: React.FC = () => {
   const [salon, setSalon] = useState<SalonResponse | null>(null);
   const [tipoEvento, setTipoEvento] = useState<CatalogoBasicoResponse | null>(null);
   const [cotizacionId, setCotizacionId] = useState('');
+  const [cotizacionEstado, setCotizacionEstado] = useState<EstadoCotizacion | null>(null);
   const [totalEventAmount, setTotalEventAmount] = useState(0);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,6 +113,22 @@ const EventPaymentsPage: React.FC = () => {
 
         try {
           const cotizacion = await cotizacionesApi.obtenerVigente(reservaRaizId);
+          setCotizacionEstado(cotizacion.estado);
+
+          if (cotizacion.estado !== 'ACEPTADA') {
+            if (cancelled) {
+              return;
+            }
+
+            setCotizacionId('');
+            setTotalEventAmount(Number(cotizacion.valorTotal) || 0);
+            setPayments([]);
+            setPaymentWarning(
+              `Para registrar anticipos, primero debes aceptar la cotizacion vigente. Estado actual: ${quoteStateLabel[cotizacion.estado]}.`
+            );
+            return;
+          }
+
           const estadoFinanciero = await pagosApi.estadoFinanciero(eventId);
           if (cancelled) {
             return;
@@ -124,11 +156,16 @@ const EventPaymentsPage: React.FC = () => {
               registeredBy: formatShortId(anticipo.usuarioId, 'USR-'),
             }))
           );
-        } catch {
+        } catch (err) {
           setCotizacionId('');
+          setCotizacionEstado(null);
           setTotalEventAmount(0);
           setPayments([]);
-          setPaymentWarning('Aun no hay cotizacion vigente para registrar anticipos en este evento.');
+          setPaymentWarning(
+            err instanceof Error
+              ? err.message
+              : 'Aun no hay cotizacion vigente para registrar anticipos en este evento.'
+          );
         }
       } catch (err) {
         if (!cancelled) {
@@ -166,12 +203,25 @@ const EventPaymentsPage: React.FC = () => {
 
     const reserva = evento.reservas.find((item) => item.vigente);
     const inicio = new Date(evento.fechaHoraInicio);
+    const fin = new Date(evento.fechaHoraFin);
 
     return {
       id: evento.id,
       title: `${tipoEvento?.nombre || 'Evento'} - ${cliente?.nombreCompleto || 'Cliente'}`,
-      dateLabel: inicio.toLocaleDateString('es-CO'),
-      timeLabel: inicio.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+      dateLabel: `Inicio: ${inicio.toLocaleString('es-CO', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`,
+      timeLabel: `Fin: ${fin.toLocaleString('es-CO', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`,
       status: estadoEventoToEventStatus(evento.estado),
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',
@@ -193,6 +243,9 @@ const EventPaymentsPage: React.FC = () => {
   const paidProgress = totalEventAmount > 0 ? Math.min((paidAmount / totalEventAmount) * 100, 100) : 0;
   const paymentStatusLabel = pendingAmount > 0 ? 'Saldo pendiente' : 'Pagado totalmente';
   const paymentHistory = useMemo(() => [...payments].reverse(), [payments]);
+  const canRegisterPayment = Boolean(
+    !isCancelled && cotizacionId && cotizacionEstado === 'ACEPTADA' && pendingAmount > 0
+  );
 
   const registerPayment = async () => {
     if (isCancelled) {
@@ -200,7 +253,7 @@ const EventPaymentsPage: React.FC = () => {
       return;
     }
 
-    if (!cotizacionId || newAmount <= 0 || !newDate || !newConcept.trim()) {
+    if (!canRegisterPayment || newAmount <= 0 || !newDate || !newConcept.trim()) {
       return;
     }
 
@@ -410,7 +463,7 @@ const EventPaymentsPage: React.FC = () => {
           <button
             type="button"
             className="bg-primary-gold text-white px-5 py-2.5 rounded-md text-sm font-bold hover:bg-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled={isCancelled || saving || !cotizacionId || newAmount <= 0 || !newDate || pendingAmount <= 0 || !newConcept.trim()}
+            disabled={saving || !canRegisterPayment || newAmount <= 0 || !newDate || !newConcept.trim()}
             onClick={registerPayment}
           >
             {isCancelled ? 'Evento cancelado' : saving ? 'Registrando...' : 'Registrar pago'}

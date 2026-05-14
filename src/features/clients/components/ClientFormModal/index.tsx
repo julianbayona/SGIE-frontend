@@ -70,6 +70,19 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
     });
   }, [initialClient, initialValues, isOpen, mode]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   const normalizedId = useMemo(() => normalizeId(form.idNumber), [form.idNumber]);
   const isDuplicateId = useMemo(() => {
     if (!normalizedId || mode === 'edit') {
@@ -88,14 +101,14 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
 
   return (
     <div
-      className="absolute inset-0 z-40 bg-black/30 backdrop-blur-[1.5px] h-full w-full flex items-center justify-center p-4 md:p-8 overflow-hidden"
+      className="fixed inset-0 z-40 flex h-dvh w-screen items-center justify-center overflow-y-auto bg-black/30 p-4 backdrop-blur-[1.5px] md:p-8"
       onClick={(eventTarget) => {
         if (eventTarget.target === eventTarget.currentTarget) {
           onCancel();
         }
       }}
     >
-      <div className="w-full max-w-2xl bg-surface border border-border rounded-lg shadow-xl mx-auto overflow-hidden">
+      <div className="mx-auto max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-hidden rounded-lg border border-border bg-surface shadow-xl">
         <div className="px-6 py-5 border-b border-border">
           <h3 className="text-xl font-display font-bold text-text1">
             {mode === 'edit' ? 'Editar cliente' : 'Nuevo cliente'}
@@ -103,7 +116,7 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
           <p className="text-sm text-text3 mt-1">Datos requeridos para solicitudes, cotizaciones y notificaciones.</p>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="max-h-[calc(100dvh-14rem)] space-y-5 overflow-y-auto p-6">
           <section className="space-y-4">
             <h4 className="text-xs font-bold uppercase tracking-widest text-text3">Identificación</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
