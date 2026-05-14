@@ -43,6 +43,18 @@ function getDurationLabel(start: string, end: string) {
   return `${hours} h ${rest} min`;
 }
 
+function getClienteInitialValues(query: string): Partial<ClientFormValues> {
+  const value = query.trim();
+  if (!value) return {};
+
+  const digits = onlyDigits(value, FORM_LIMITS.phone);
+  if (digits && digits.length === value.length) {
+    return digits.length >= 8 ? { idNumber: digits } : { phone: digits };
+  }
+
+  return { fullName: limitText(value, FORM_LIMITS.name) };
+}
+
 function EventRequestPage() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -136,6 +148,10 @@ function EventRequestPage() {
     clienteEncontrado && selectedVenueId && tipoEventoId && tipoComidaId && hasValidDates,
   );
   const durationLabel = getDurationLabel(fechaHoraInicio, fechaHoraFin);
+  const customerSearchText = customerQuery.trim();
+  const canSearchCliente = customerSearchText.length >= 3;
+  const showNoClientResults = canSearchCliente && !searchingCliente && clienteResultados.length === 0 && !clienteEncontrado;
+  const clientInitialValues = useMemo(() => getClienteInitialValues(customerQuery), [customerQuery]);
 
   const consultarDisponibilidad = async () => {
     if (!fechaHoraInicio || !fechaHoraFin) {
@@ -271,7 +287,7 @@ function EventRequestPage() {
                 <p className={labelClass}>Paso 1</p>
                 <h2 className="mt-1 font-serif text-2xl font-black text-stone-950">Cliente principal</h2>
                 <p className="mt-1 text-sm text-stone-500">
-                  Busca por cedula, nombre o telefono. Si no existe, registralo sin salir del flujo.
+                  Primero busca un cliente existente. Si no aparece, puedes registrarlo aqui y quedara seleccionado automaticamente.
                 </p>
               </div>
 
@@ -288,16 +304,47 @@ function EventRequestPage() {
                       setClienteEncontrado(null);
                     }}
                   />
+                  <div className="grid gap-2 rounded-2xl border border-[#A8841C]/20 bg-[#fbf8f1] p-3 text-xs font-semibold text-stone-700 sm:grid-cols-3">
+                    <span className="flex items-center gap-2">
+                      <span className="grid size-5 place-items-center rounded-full bg-[#A8841C] text-[10px] text-white">1</span>
+                      Escribe cedula, telefono o nombre
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="grid size-5 place-items-center rounded-full bg-[#A8841C] text-[10px] text-white">2</span>
+                      Elige una coincidencia
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="grid size-5 place-items-center rounded-full bg-[#A8841C] text-[10px] text-white">3</span>
+                      Si no existe, registralo
+                    </span>
+                  </div>
 
                   <div className="min-h-28 rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3">
                     {searchingCliente && (
                       <p className="px-2 py-3 text-sm font-semibold text-stone-500">Buscando coincidencias...</p>
                     )}
 
-                    {!searchingCliente && clienteResultados.length === 0 && !clienteEncontrado && (
+                    {!searchingCliente && !canSearchCliente && !clienteEncontrado && (
                       <p className="px-2 py-3 text-sm text-stone-500">
-                        Escribe al menos 3 caracteres para ver resultados.
+                        Escribe al menos 3 caracteres para buscar clientes registrados.
                       </p>
+                    )}
+
+                    {showNoClientResults && (
+                      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                        <p className="text-sm font-black text-amber-950">No encontramos coincidencias.</p>
+                        <p className="mt-1 text-sm leading-6 text-amber-800">
+                          Puedes revisar la busqueda o registrar un nuevo cliente. Al guardarlo, quedara asignado a esta solicitud.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="mt-3 border-[#A8841C]/25 bg-[#A8841C] text-white hover:bg-[#8f7118]"
+                          onClick={() => setIsClienteFormOpen(true)}
+                        >
+                          Registrar cliente con estos datos
+                        </Button>
+                      </div>
                     )}
 
                     <div className="space-y-2">
@@ -320,7 +367,7 @@ function EventRequestPage() {
                               {cliente.cedula} · {cliente.telefono}
                             </span>
                           </span>
-                          <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-black text-stone-600">
+                          <span className="rounded-full bg-[#A8841C] px-3 py-1 text-xs font-black text-white">
                             Elegir
                           </span>
                         </button>
@@ -340,14 +387,26 @@ function EventRequestPage() {
                         <p className="mt-2 text-sm font-semibold text-stone-600">{clienteEncontrado.telefono}</p>
                         <p className="text-sm font-semibold text-stone-600">{clienteEncontrado.correo || 'Sin correo'}</p>
                       </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
+                        onClick={() => {
+                          setClienteEncontrado(null);
+                          setCustomerQuery('');
+                          setClienteResultados([]);
+                        }}
+                      >
+                        Cambiar cliente
+                      </Button>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       <p className="text-xs font-black uppercase tracking-[0.2em] text-[#A8841C]">
-                        Sin cliente
+                        Cliente pendiente
                       </p>
                       <p className="text-sm font-medium leading-6 text-stone-600">
-                        La solicitud necesita un cliente para guardar trazabilidad del evento.
+                        Selecciona una coincidencia o registra un cliente nuevo. Sin este paso no se puede crear el evento.
                       </p>
                     </div>
                   )}
@@ -551,6 +610,7 @@ function EventRequestPage() {
         isOpen={isClienteFormOpen}
         mode="create"
         initialClient={null}
+        initialValues={clientInitialValues}
         idNumbersInUse={clienteResultados.map((cliente) => cliente.cedula)}
         onCancel={() => setIsClienteFormOpen(false)}
         onSubmit={handleRegistrarCliente}

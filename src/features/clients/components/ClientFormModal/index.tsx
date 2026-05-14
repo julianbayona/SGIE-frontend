@@ -14,6 +14,7 @@ interface ClientFormModalProps {
   isOpen: boolean;
   mode: 'create' | 'edit';
   initialClient?: Client | null;
+  initialValues?: Partial<ClientFormValues>;
   idNumbersInUse: string[];
   onCancel: () => void;
   onSubmit: (values: ClientFormValues) => void;
@@ -36,6 +37,7 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
   isOpen,
   mode,
   initialClient,
+  initialValues,
   idNumbersInUse,
   onCancel,
   onSubmit,
@@ -58,8 +60,15 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
       return;
     }
 
-    setForm(getEmptyForm());
-  }, [initialClient, isOpen, mode]);
+    setForm({
+      ...getEmptyForm(),
+      ...initialValues,
+      idNumber: normalizeId(initialValues?.idNumber ?? ''),
+      phone: onlyDigits(initialValues?.phone ?? '', FORM_LIMITS.phone),
+      fullName: limitText(initialValues?.fullName ?? '', FORM_LIMITS.name),
+      email: limitText(initialValues?.email ?? '', FORM_LIMITS.email),
+    });
+  }, [initialClient, initialValues, isOpen, mode]);
 
   const normalizedId = useMemo(() => normalizeId(form.idNumber), [form.idNumber]);
   const isDuplicateId = useMemo(() => {
