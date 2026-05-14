@@ -6,7 +6,7 @@ import { getEventSummaryById } from '@/features/events/data/eventSummary';
 const sectionLabelByTab: Record<EventDetailTab, string> = {
   summary: 'Resumen',
   menu: 'Menu',
-  agenda: 'Agenda',
+  agenda: 'Notificaciones',
   montaje: 'Montaje',
   cotizacion: 'Cotizacion',
   pagos: 'Pagos',
@@ -15,7 +15,7 @@ const sectionLabelByTab: Record<EventDetailTab, string> = {
 const placeholderTextByTab: Record<EventDetailTab, string> = {
   summary: 'Resumen general del evento.',
   menu: 'Configuracion de menu del evento.',
-  agenda: 'Programacion de degustaciones y recordatorios de anticipos.',
+  agenda: 'Monitoreo de notificaciones, pruebas de plato, recordatorios y sincronizaciones.',
   montaje: 'Definicion de montaje y distribucion del salon.',
   cotizacion: 'Ajustes de costos y consolidado de cotizacion.',
   pagos: 'Control de anticipos y pagos pendientes.',

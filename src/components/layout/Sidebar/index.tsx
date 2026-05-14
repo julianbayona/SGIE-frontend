@@ -6,8 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 const navItems = [
   { to: '/', icon: 'calendar_month', label: 'Calendario', roles: ['ADMINISTRADOR', 'GERENTE', 'TESORERO'] },
   { to: '/events', icon: 'event_available', label: 'Eventos', roles: ['ADMINISTRADOR', 'GERENTE', 'TESORERO'] },
-  { to: '/clients', icon: 'group', label: 'Clientes', roles: ['ADMINISTRADOR', 'GERENTE', 'TESORERO'] },
   { to: '/quotes', icon: 'description', label: 'Cotizaciones', roles: ['ADMINISTRADOR', 'GERENTE', 'TESORERO'] },
+  { to: '/clients', icon: 'group', label: 'Clientes', roles: ['ADMINISTRADOR', 'GERENTE', 'TESORERO'] },
   { to: '/reports', icon: 'monitoring', label: 'Reportes', roles: ['ADMINISTRADOR', 'GERENTE', 'TESORERO'] },
   { to: '/users', icon: 'manage_accounts', label: 'Usuarios', roles: ['ADMINISTRADOR'] },
   { to: '/catalogs', icon: 'settings', label: 'Catalogos', roles: ['ADMINISTRADOR'] },

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import catalogosApi from '@/api/catalogos';
 import clientesApi from '@/api/clientes';
@@ -53,6 +53,7 @@ const fieldClass =
 
 const EventMenuPage: React.FC = () => {
   const { eventId } = useParams();
+  const navigate = useNavigate();
   const toast = useToast();
 
   const [evento, setEvento] = useState<EventoResponse | null>(null);
@@ -353,6 +354,9 @@ const EventMenuPage: React.FC = () => {
 
       setQuoteState(null);
       toast.success('Menu guardado', 'La seleccion gastronomica quedo asociada a la reserva vigente.');
+      if (eventId) {
+        navigate(`/events/${eventId}/montaje`);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al guardar menu';
       setError(message);

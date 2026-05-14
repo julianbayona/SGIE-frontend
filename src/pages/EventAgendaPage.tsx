@@ -330,7 +330,7 @@ const EventAgendaPage: React.FC = () => {
 
   const createEntry = async () => {
     if (isCancelled) {
-      setError('No se pueden crear agendamientos para un evento cancelado.');
+      setError('No se pueden crear notificaciones para un evento cancelado.');
       return;
     }
 
@@ -380,9 +380,9 @@ const EventAgendaPage: React.FC = () => {
           : 'El recordatorio quedo programado para la fecha indicada.',
       );
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al crear agendamiento.';
+      const message = err instanceof Error ? err.message : 'Error al crear notificacion.';
       setError(message);
-      toast.error('No fue posible crear el agendamiento', message);
+      toast.error('No fue posible crear la notificacion', message);
     } finally {
       setSaving(false);
     }
@@ -408,7 +408,7 @@ const EventAgendaPage: React.FC = () => {
     return (
       <section className="space-y-8 pb-24">
         <div className="flex items-center justify-center py-16 text-on-surface-variant">
-          Cargando agenda del evento...
+          Cargando notificaciones del evento...
         </div>
       </section>
     );
@@ -434,7 +434,7 @@ const EventAgendaPage: React.FC = () => {
       />
 
       {isCancelled && (
-        <EventCancelledNotice detail="La agenda queda disponible para monitoreo. No se pueden crear nuevas pruebas de plato ni recordatorios de anticipo para un evento cancelado." />
+        <EventCancelledNotice detail="Las notificaciones quedan disponibles para monitoreo. No se pueden crear nuevas pruebas de plato ni recordatorios de anticipo para un evento cancelado." />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -595,9 +595,9 @@ const EventAgendaPage: React.FC = () => {
         <section className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h4 className="text-2xl font-display font-bold text-on-surface">Agenda de recordatorios</h4>
+              <h4 className="text-2xl font-display font-bold text-on-surface">Notificaciones y recordatorios</h4>
               <p className="text-sm text-on-surface-variant mt-1">
-                Crea múltiples agendamientos para degustación y múltiples recordatorios para cada anticipo.
+                Crea y monitorea pruebas de plato, recordatorios de anticipo, envíos y sincronizaciones externas.
               </p>
             </div>
             <select
@@ -660,7 +660,7 @@ const EventAgendaPage: React.FC = () => {
         </section>
 
         <aside className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
-          <h4 className="text-xl font-display font-bold text-on-surface">Nuevo agendamiento</h4>
+          <h4 className="text-xl font-display font-bold text-on-surface">Nueva notificacion</h4>
           {isCancelled ? (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
               El evento esta cancelado. Este formulario queda bloqueado.
@@ -740,7 +740,7 @@ const EventAgendaPage: React.FC = () => {
             disabled={isCancelled || saving || !newMilestone.trim() || !newScheduledAt}
             onClick={createEntry}
           >
-            {isCancelled ? 'Evento cancelado' : saving ? 'Agendando...' : 'Agendar recordatorio'}
+            {isCancelled ? 'Evento cancelado' : saving ? 'Programando...' : 'Programar notificacion'}
           </button>
         </aside>
       </div>

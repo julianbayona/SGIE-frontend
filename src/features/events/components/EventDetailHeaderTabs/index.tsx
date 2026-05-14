@@ -29,10 +29,10 @@ interface EventDetailHeaderTabsProps {
 const tabs: Array<{ key: EventDetailTab; label: string; getPath: (eventId: string) => string }> = [
   { key: 'summary', label: 'Resumen', getPath: (eventId) => `/events/${eventId}` },
   { key: 'menu', label: 'Menu', getPath: (eventId) => `/events/${eventId}/menu` },
-  { key: 'agenda', label: 'Agenda', getPath: (eventId) => `/events/${eventId}/agenda` },
   { key: 'montaje', label: 'Montaje', getPath: (eventId) => `/events/${eventId}/montaje` },
   { key: 'cotizacion', label: 'Cotizacion', getPath: (eventId) => `/events/${eventId}/cotizacion` },
   { key: 'pagos', label: 'Pagos', getPath: (eventId) => `/events/${eventId}/pagos` },
+  { key: 'agenda', label: 'Notificaciones', getPath: (eventId) => `/events/${eventId}/agenda` },
 ];
 
 const actionButtonClass =

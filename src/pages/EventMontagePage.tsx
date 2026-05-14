@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import EventCancelledNotice from '@/features/events/components/EventCancelledNotice';
 import EventDetailHeaderTabs from '@/features/events/components/EventDetailHeaderTabs';
 import eventosApi from '@/api/eventos';
@@ -53,6 +53,7 @@ const getTextilColorId = (textil: MantelResponse | SobremantelResponse | undefin
 
 const EventMontagePage: React.FC = () => {
   const { eventId } = useParams();
+  const navigate = useNavigate();
   const toast = useToast();
 
   const [evento, setEvento] = useState<EventoResponse | null>(null);
@@ -346,6 +347,9 @@ const EventMontagePage: React.FC = () => {
 
       setQuoteState(null);
       toast.success('Montaje guardado', 'La configuracion de mesas, textiles y adicionales quedo actualizada.');
+      if (eventId) {
+        navigate(`/events/${eventId}/cotizacion`);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al guardar montaje';
       setError(message);
