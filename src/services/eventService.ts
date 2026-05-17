@@ -1,17 +1,8 @@
 import eventosApi from '@/api/eventos';
-import type { EventoResponse, EstadoEvento } from '@/api/types';
-import type { Event, EventStatus } from '@/features/calendar/types';
+import type { EventoResponse } from '@/api/types';
+import type { Event } from '@/features/calendar/types';
+import { getEventDisplayStatus } from '@/features/events/utils/eventStatus';
 import { formatShortId } from '@/utils/formatters';
-
-/** Mapea el enum del backend al label que usa el frontend. */
-const estadoMap: Record<EstadoEvento, EventStatus> = {
-  PENDIENTE: 'Pendiente',
-  COTIZACION_ENVIADA: 'Cotización enviada',
-  COTIZACION_APROBADA: 'Cotización aprobada',
-  PENDIENTE_ANTICIPO: 'Pendiente anticipo',
-  CONFIRMADO: 'Confirmado',
-  CANCELADO: 'Cancelado',
-};
 
 function toCalendarEvent(evento: EventoResponse): Event {
   const reservaVigente = evento.reservas.find((r) => r.vigente);
@@ -20,8 +11,8 @@ function toCalendarEvent(evento: EventoResponse): Event {
     title: formatShortId(evento.id, 'EV-'),
     start: new Date(evento.fechaHoraInicio),
     end: new Date(evento.fechaHoraFin),
-    status: estadoMap[evento.estado] ?? 'Pendiente',
-    salon: reservaVigente?.salonId ? formatShortId(reservaVigente.salonId, 'SAL-') : 'Sin salón',
+    status: getEventDisplayStatus(evento),
+    salon: reservaVigente?.salonId ? formatShortId(reservaVigente.salonId, 'SAL-') : 'Sin salon',
   };
 }
 
@@ -37,7 +28,7 @@ const eventService = {
       .filter((e) => e.end > startDate && e.start <= endDate);
   },
 
-  /** Expone el evento crudo del backend para módulos que lo necesiten. */
+  /** Expone el evento crudo del backend para modulos que lo necesiten. */
   async getEventById(id: string): Promise<EventoResponse> {
     return eventosApi.obtenerPorId(id);
   },

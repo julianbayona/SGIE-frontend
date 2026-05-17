@@ -9,6 +9,8 @@ const statusStyles: Record<EventStatus, { bg: string; border: string; dot: strin
   'Pendiente anticipo': { bg: 'bg-orange-100', border: 'border-orange-300', dot: 'bg-orange-600', text: 'text-orange-900' },
   'Esperando selección de menú': { bg: 'bg-violet-100', border: 'border-violet-300', dot: 'bg-violet-600', text: 'text-violet-900' },
   Cancelado: { bg: 'bg-slate-200', border: 'border-slate-300', dot: 'bg-slate-500', text: 'text-slate-700' },
+  Finalizado: { bg: 'bg-stone-200', border: 'border-stone-300', dot: 'bg-stone-500', text: 'text-stone-700' },
+  Vencido: { bg: 'bg-rose-100', border: 'border-rose-300', dot: 'bg-rose-600', text: 'text-rose-900' },
 };
 
 interface EventItemProps {

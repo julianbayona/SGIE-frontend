@@ -16,6 +16,7 @@ import type {
 import EventCancelledNotice from '@/features/events/components/EventCancelledNotice';
 import EventDetailHeaderTabs from '@/features/events/components/EventDetailHeaderTabs';
 import { buildEventSummaryData } from '@/features/events/data/eventSummary';
+import { isEventReadOnly } from '@/features/events/utils/eventStatus';
 
 const estadoLabels: Record<EstadoEvento, string> = {
   PENDIENTE: 'Pendiente',
@@ -119,6 +120,8 @@ const EventSummaryPage: React.FC = () => {
 
   const currentStepIndex = evento ? lifecycleSteps.indexOf(evento.estado) : -1;
   const isCancelled = evento?.estado === 'CANCELADO';
+  const isReadOnly = isEventReadOnly(evento);
+  const readOnlyTitle = isCancelled ? 'Evento cancelado: modo solo lectura' : `${event.status}: modo solo lectura`;
 
   if (loading) {
     return (
@@ -149,8 +152,11 @@ const EventSummaryPage: React.FC = () => {
         onEventUpdated={setEvento}
       />
 
-      {isCancelled && (
-        <EventCancelledNotice detail="Este evento queda disponible solo para consulta historica. Las acciones operativas estan bloqueadas." />
+      {isReadOnly && (
+        <EventCancelledNotice
+          title={readOnlyTitle}
+          detail="Este evento queda disponible solo para consulta historica. Las acciones operativas estan bloqueadas."
+        />
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -198,11 +204,11 @@ const EventSummaryPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(`/events/${event.id}/pagos`)}
-            disabled={isCancelled}
+            disabled={isReadOnly}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#A8841C] px-4 py-3 text-sm font-black text-white shadow-sm transition-colors hover:bg-[#8f7118] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="material-symbols-outlined text-lg">payments</span>
-            {isCancelled ? 'Evento cancelado' : 'Registrar anticipo'}
+            {isReadOnly ? event.status : 'Registrar anticipo'}
           </button>
         </div>
 

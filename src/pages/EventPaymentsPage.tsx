@@ -8,7 +8,7 @@ import salonesApi from '@/api/salones';
 import catalogosApi from '@/api/catalogos';
 import cotizacionesApi from '@/api/cotizaciones';
 import { useToast } from '@/components/ui/ToastProvider';
-import { estadoEventoToEventStatus } from '@/features/events/utils/eventStatus';
+import { getEventDisplayStatus, isEventReadOnly } from '@/features/events/utils/eventStatus';
 import pagosApi from '@/api/pagos';
 import type {
   EventoResponse,
@@ -68,6 +68,7 @@ const EventPaymentsPage: React.FC = () => {
   const [newMethod, setNewMethod] = useState('TRANSFERENCIA');
   const [newConcept, setNewConcept] = useState('Anticipo');
   const isCancelled = evento?.estado === 'CANCELADO';
+  const isReadOnly = isEventReadOnly(evento);
 
   useEffect(() => {
     if (!eventId) {
@@ -222,7 +223,7 @@ const EventPaymentsPage: React.FC = () => {
         hour: '2-digit',
         minute: '2-digit',
       })}`,
-      status: estadoEventoToEventStatus(evento.estado),
+      status: getEventDisplayStatus(evento),
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',
       createdBy: formatShortId(evento.usuarioCreadorId, 'USR-'),
@@ -244,12 +245,12 @@ const EventPaymentsPage: React.FC = () => {
   const paymentStatusLabel = pendingAmount > 0 ? 'Saldo pendiente' : 'Pagado totalmente';
   const paymentHistory = useMemo(() => [...payments].reverse(), [payments]);
   const canRegisterPayment = Boolean(
-    !isCancelled && cotizacionId && cotizacionEstado === 'ACEPTADA' && pendingAmount > 0
+    !isReadOnly && cotizacionId && cotizacionEstado === 'ACEPTADA' && pendingAmount > 0
   );
 
   const registerPayment = async () => {
-    if (isCancelled) {
-      setError('No se pueden registrar pagos en un evento cancelado.');
+    if (isReadOnly) {
+      setError('No se pueden registrar pagos en un evento en modo solo lectura.');
       return;
     }
 
@@ -332,8 +333,11 @@ const EventPaymentsPage: React.FC = () => {
         onEventUpdated={setEvento}
       />
 
-      {isCancelled && (
-        <EventCancelledNotice detail="Los pagos quedan disponibles solo para consulta. No se pueden registrar nuevos anticipos o abonos en un evento cancelado." />
+      {isReadOnly && (
+        <EventCancelledNotice
+          title={isCancelled ? undefined : `${event.status}: modo solo lectura`}
+          detail="Los pagos quedan disponibles solo para consulta. No se pueden registrar nuevos anticipos o abonos."
+        />
       )}
 
       {error ? (
@@ -409,7 +413,7 @@ const EventPaymentsPage: React.FC = () => {
                 value={newConcept}
                 maxLength={FORM_LIMITS.shortText}
                 onChange={(eventTarget) => setNewConcept(limitText(eventTarget.target.value, FORM_LIMITS.shortText))}
-                disabled={isCancelled}
+                disabled={isReadOnly}
               />
             </div>
 
@@ -419,7 +423,7 @@ const EventPaymentsPage: React.FC = () => {
                 className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
                 value={newMethod}
                 onChange={(eventTarget) => setNewMethod(eventTarget.target.value)}
-                disabled={isCancelled}
+                disabled={isReadOnly}
               >
                 <option value="TRANSFERENCIA">Transferencia</option>
                 <option value="EFECTIVO">Efectivo</option>
@@ -441,7 +445,7 @@ const EventPaymentsPage: React.FC = () => {
                 onChange={(eventTarget) =>
                   setNewAmount(Math.max(0, toLimitedNumber(eventTarget.target.value, FORM_LIMITS.moneyDigits)))
                 }
-                disabled={isCancelled}
+                disabled={isReadOnly}
               />
               <p className="text-xs text-on-surface-variant mt-2">
                 Maximo permitido: {formatCurrency(pendingAmount)}
@@ -455,7 +459,7 @@ const EventPaymentsPage: React.FC = () => {
                 type="date"
                 value={newDate}
                 onChange={(eventTarget) => setNewDate(eventTarget.target.value)}
-                disabled={isCancelled}
+                disabled={isReadOnly}
               />
             </div>
           </div>
@@ -466,7 +470,7 @@ const EventPaymentsPage: React.FC = () => {
             disabled={saving || !canRegisterPayment || newAmount <= 0 || !newDate || !newConcept.trim()}
             onClick={registerPayment}
           >
-            {isCancelled ? 'Evento cancelado' : saving ? 'Registrando...' : 'Registrar pago'}
+            {isReadOnly ? event.status : saving ? 'Registrando...' : 'Registrar pago'}
           </button>
         </section>
 

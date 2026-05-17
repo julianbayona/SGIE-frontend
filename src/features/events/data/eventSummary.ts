@@ -1,6 +1,6 @@
 import type { EventStatus } from '@/features/events/types';
 import type { CatalogoBasicoResponse, ClienteResponse, EventoResponse, SalonResponse } from '@/api/types';
-import { estadoEventoToEventStatus } from '@/features/events/utils/eventStatus';
+import { getEventDisplayStatus } from '@/features/events/utils/eventStatus';
 import { formatShortId } from '@/utils/formatters';
 
 export interface EventSummaryData {
@@ -95,7 +95,7 @@ export const buildEventSummaryData = ({
     title: `${tipoEvento?.nombre || 'Evento'} - ${cliente?.nombreCompleto || 'Cliente'}`,
     dateLabel: `Inicio: ${formatEventDateTime(inicio)}`,
     timeLabel: `Fin: ${formatEventDateTime(fin)}`,
-    status: estadoEventoToEventStatus(evento.estado),
+    status: getEventDisplayStatus(evento),
     customerName: cliente?.nombreCompleto || 'Cargando...',
     customerPhone: cliente?.telefono || '',
     createdBy: createdBy ?? formatShortId(evento.usuarioCreadorId, 'USR-'),

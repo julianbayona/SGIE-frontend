@@ -33,6 +33,8 @@ const statuses: Array<EventStatus | 'Todos'> = [
   'Pendiente anticipo',
   'Confirmado',
   'Cancelado',
+  'Finalizado',
+  'Vencido',
 ];
 
 const EventsPageHeader: React.FC<EventsPageHeaderProps> = ({

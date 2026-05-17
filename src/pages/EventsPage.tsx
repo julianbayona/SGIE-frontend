@@ -3,24 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import EventsPageHeader, { type EventsFilters } from '@/features/events/components/EventsPageHeader';
 import EventsTable from '@/features/events/components/EventsTable';
 import EventsTablePagination from '@/features/events/components/EventsTablePagination';
-import type { EventRecord, EventStatus } from '@/features/events/types';
+import type { EventRecord } from '@/features/events/types';
 import eventosApi from '@/api/eventos';
 import clientesApi from '@/api/clientes';
 import salonesApi from '@/api/salones';
 import catalogosApi from '@/api/catalogos';
 import usuariosApi, { type UsuarioResponse } from '@/api/usuarios';
 import type { CatalogoBasicoResponse, ClienteResponse, EstadoEvento, EventoResponse, SalonResponse } from '@/api/types';
+import { getEventDisplayStatus, isEventReadOnly } from '@/features/events/utils/eventStatus';
 import { formatShortId } from '@/utils/formatters';
 import { paginate } from '@/utils/pagination';
-
-const estadoMap: Record<EstadoEvento, EventStatus> = {
-  PENDIENTE: 'Pendiente',
-  COTIZACION_ENVIADA: 'Cotización enviada',
-  COTIZACION_APROBADA: 'Cotización aprobada',
-  PENDIENTE_ANTICIPO: 'Pendiente anticipo',
-  CONFIRMADO: 'Confirmado',
-  CANCELADO: 'Cancelado',
-};
 
 const nextActionMap: Record<EstadoEvento, string> = {
   PENDIENTE: 'Seleccionar menú y montaje',
@@ -92,9 +84,9 @@ function toEventRecord(
     createdBy: usuarioCreador?.nombre ?? formatShortId(evento.usuarioCreadorId, 'USR-'),
     hall: salon?.nombre ?? 'Sin salón',
     eventKind: (tipoEvento?.nombre ?? 'Social') as EventRecord['eventKind'],
-    status: estadoMap[evento.estado] ?? 'Pendiente',
-    isActive: evento.estado !== 'CANCELADO',
-    nextAction: nextActionMap[evento.estado] ?? '',
+    status: getEventDisplayStatus(evento),
+    isActive: !isEventReadOnly(evento),
+    nextAction: isEventReadOnly(evento) ? 'Sin acciones pendientes' : nextActionMap[evento.estado] ?? '',
   };
 }
 

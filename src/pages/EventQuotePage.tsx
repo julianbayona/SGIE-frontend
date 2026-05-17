@@ -9,7 +9,7 @@ import clientesApi from '@/api/clientes';
 import salonesApi from '@/api/salones';
 import catalogosApi from '@/api/catalogos';
 import { useToast } from '@/components/ui/ToastProvider';
-import { estadoEventoToEventStatus } from '@/features/events/utils/eventStatus';
+import { getEventDisplayStatus, isEventReadOnly } from '@/features/events/utils/eventStatus';
 import type {
   EventoResponse,
   CotizacionResponse,
@@ -118,7 +118,8 @@ const EventQuotePage: React.FC = () => {
 
   const isDraft = cotizacion?.estado === 'BORRADOR';
   const isCancelled = evento?.estado === 'CANCELADO';
-  const canEditPrices = cotizacion && !isCancelled ? ['BORRADOR', 'GENERADA', 'ENVIADA'].includes(cotizacion.estado) : false;
+  const isReadOnly = isEventReadOnly(evento);
+  const canEditPrices = cotizacion && !isReadOnly ? ['BORRADOR', 'GENERADA', 'ENVIADA'].includes(cotizacion.estado) : false;
   const quoteStatus = cotizacion ? estadoMap[cotizacion.estado] : 'Borrador';
 
   const adjustedTotal = cotizacion?.valorTotal || 0;
@@ -162,8 +163,8 @@ const EventQuotePage: React.FC = () => {
 
   const handleGenerarBorrador = async () => {
     if (!reservaRaizId) return;
-    if (isCancelled) {
-      setError('No se puede generar cotizacion para un evento cancelado.');
+    if (isReadOnly) {
+      setError('No se puede generar cotizacion para un evento en modo solo lectura.');
       return;
     }
 
@@ -188,8 +189,8 @@ const EventQuotePage: React.FC = () => {
   };
 
   const handleGenerarNuevaVersion = async () => {
-    if (isCancelled) {
-      setError('No se puede crear una nueva version de cotizacion para un evento cancelado.');
+    if (isReadOnly) {
+      setError('No se puede crear una nueva version de cotizacion para un evento en modo solo lectura.');
       return;
     }
     setError(
@@ -199,8 +200,8 @@ const EventQuotePage: React.FC = () => {
 
   const handleGenerarCotizacion = async () => {
     if (!cotizacion) return;
-    if (isCancelled) {
-      setError('No se puede generar documento para un evento cancelado.');
+    if (isReadOnly) {
+      setError('No se puede generar documento para un evento en modo solo lectura.');
       return;
     }
 
@@ -241,8 +242,8 @@ const EventQuotePage: React.FC = () => {
 
   const handleEnviarCotizacion = async () => {
     if (!cotizacion) return;
-    if (isCancelled) {
-      setError('No se puede enviar cotizacion de un evento cancelado.');
+    if (isReadOnly) {
+      setError('No se puede enviar cotizacion de un evento en modo solo lectura.');
       return;
     }
 
@@ -267,8 +268,8 @@ const EventQuotePage: React.FC = () => {
 
   const handleEnviarEmail = async () => {
     if (!cotizacion) return;
-    if (isCancelled) {
-      setError('No se puede enviar cotizacion por email de un evento cancelado.');
+    if (isReadOnly) {
+      setError('No se puede enviar cotizacion por email de un evento en modo solo lectura.');
       return;
     }
 
@@ -303,8 +304,8 @@ const EventQuotePage: React.FC = () => {
 
   const handleAceptarCotizacion = async () => {
     if (!cotizacion) return;
-    if (isCancelled) {
-      setError('No se puede aceptar cotizacion de un evento cancelado.');
+    if (isReadOnly) {
+      setError('No se puede aceptar cotizacion de un evento en modo solo lectura.');
       return;
     }
 
@@ -365,7 +366,7 @@ const EventQuotePage: React.FC = () => {
         hour: '2-digit',
         minute: '2-digit',
       })}`,
-      status: estadoEventoToEventStatus(evento.estado),
+      status: getEventDisplayStatus(evento),
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',
       createdBy: formatShortId(evento.usuarioCreadorId, 'USR-'),
@@ -406,8 +407,11 @@ const EventQuotePage: React.FC = () => {
           onEventUpdated={setEvento}
         />
 
-        {isCancelled && (
-          <EventCancelledNotice detail="Las cotizaciones de este evento quedan disponibles solo para consulta. No se pueden generar borradores, enviar o aceptar." />
+        {isReadOnly && (
+          <EventCancelledNotice
+            title={isCancelled ? undefined : `${event.status}: modo solo lectura`}
+            detail="Las cotizaciones de este evento quedan disponibles solo para consulta. No se pueden generar borradores, enviar o aceptar."
+          />
         )}
 
         {error && (
@@ -425,9 +429,9 @@ const EventQuotePage: React.FC = () => {
               className="rounded-md bg-primary-gold px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-primary disabled:opacity-50"
               type="button"
               onClick={handleGenerarBorrador}
-              disabled={isCancelled || saving || !reservaRaizId}
+              disabled={isReadOnly || saving || !reservaRaizId}
             >
-              {isCancelled ? 'Evento cancelado' : saving ? 'Generando...' : 'Generar borrador'}
+              {isReadOnly ? event.status : saving ? 'Generando...' : 'Generar borrador'}
             </button>
             <Link
               to={`/events/${eventId}/menu`}
@@ -456,8 +460,11 @@ const EventQuotePage: React.FC = () => {
         onEventUpdated={setEvento}
       />
 
-      {isCancelled && (
-        <EventCancelledNotice detail="La cotizacion queda en modo consulta. No se pueden ajustar precios, enviar, aceptar o crear nuevas versiones." />
+      {isReadOnly && (
+        <EventCancelledNotice
+          title={isCancelled ? undefined : `${event.status}: modo solo lectura`}
+          detail="La cotizacion queda en modo consulta. No se pueden ajustar precios, enviar, aceptar o crear nuevas versiones."
+        />
       )}
 
       {error && (
@@ -718,7 +725,7 @@ const EventQuotePage: React.FC = () => {
               className="flex-1 rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
               type="button"
               onClick={handleGenerarCotizacion}
-              disabled={isCancelled || saving}
+              disabled={isReadOnly || saving}
             >
               Generar cotización
             </button>
@@ -727,7 +734,7 @@ const EventQuotePage: React.FC = () => {
               className="flex-1 rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
               type="button"
               onClick={handleGenerarNuevaVersion}
-              disabled={isCancelled || saving || !reservaRaizId}
+              disabled={isReadOnly || saving || !reservaRaizId}
             >
               Crear nueva version
             </button>
@@ -746,7 +753,7 @@ const EventQuotePage: React.FC = () => {
             className="flex-1 rounded-md border border-green-text/40 px-5 py-2.5 text-sm font-semibold text-green-text transition-colors hover:bg-green-bg disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
             type="button"
             onClick={handleEnviarCotizacion}
-            disabled={isCancelled || saving || cotizacion.estado !== 'GENERADA'}
+            disabled={isReadOnly || saving || cotizacion.estado !== 'GENERADA'}
           >
             Marcar enviada
           </button>
@@ -755,7 +762,7 @@ const EventQuotePage: React.FC = () => {
             className="flex-1 rounded-md border border-blue-300 px-5 py-2.5 text-sm font-semibold text-blue-800 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
             type="button"
             onClick={handleEnviarEmail}
-            disabled={isCancelled || saving || !['GENERADA', 'ENVIADA', 'ACEPTADA'].includes(cotizacion.estado)}
+            disabled={isReadOnly || saving || !['GENERADA', 'ENVIADA', 'ACEPTADA'].includes(cotizacion.estado)}
           >
             Enviar email
           </button>
@@ -764,7 +771,7 @@ const EventQuotePage: React.FC = () => {
             className="flex-1 rounded-md bg-primary-gold px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
             type="button"
             onClick={handleAceptarCotizacion}
-            disabled={isCancelled || saving || !['GENERADA', 'ENVIADA'].includes(cotizacion.estado)}
+            disabled={isReadOnly || saving || !['GENERADA', 'ENVIADA'].includes(cotizacion.estado)}
           >
             Aceptar
           </button>

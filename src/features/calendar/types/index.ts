@@ -5,7 +5,9 @@ export type EventStatus =
   | 'Cotización aprobada'
   | 'Pendiente anticipo'
   | 'Confirmado'
-  | 'Cancelado';
+  | 'Cancelado'
+  | 'Finalizado'
+  | 'Vencido';
 
 export interface Event {
   id: string;

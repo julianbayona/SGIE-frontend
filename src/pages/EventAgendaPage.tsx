@@ -7,7 +7,7 @@ import clientesApi from '@/api/clientes';
 import salonesApi from '@/api/salones';
 import catalogosApi from '@/api/catalogos';
 import pagosApi from '@/api/pagos';
-import { estadoEventoToEventStatus } from '@/features/events/utils/eventStatus';
+import { getEventDisplayStatus, isEventReadOnly } from '@/features/events/utils/eventStatus';
 import pruebasPlatoApi from '@/api/pruebasPlato';
 import calendarioApi from '@/api/calendario';
 import notificacionesApi from '@/api/notificaciones';
@@ -130,6 +130,7 @@ const EventAgendaPage: React.FC = () => {
   const [newNotes, setNewNotes] = useState('');
   const [filterCategory, setFilterCategory] = useState<'todos' | AgendaCategory>('todos');
   const isCancelled = evento?.estado === 'CANCELADO';
+  const isReadOnly = isEventReadOnly(evento);
 
   const cargarMonitoreo = async (currentEventId: string) => {
     const [notificacionesData, calendarData] = await Promise.all([
@@ -276,7 +277,7 @@ const EventAgendaPage: React.FC = () => {
         hour: '2-digit',
         minute: '2-digit',
       })}`,
-      status: estadoEventoToEventStatus(evento.estado),
+      status: getEventDisplayStatus(evento),
       customerName: cliente?.nombreCompleto || 'Cargando...',
       customerPhone: cliente?.telefono || '',
       createdBy: formatShortId(evento.usuarioCreadorId, 'USR-'),
@@ -329,8 +330,8 @@ const EventAgendaPage: React.FC = () => {
   };
 
   const createEntry = async () => {
-    if (isCancelled) {
-      setError('No se pueden crear notificaciones para un evento cancelado.');
+    if (isReadOnly) {
+      setError('No se pueden crear notificaciones para un evento en modo solo lectura.');
       return;
     }
 
@@ -389,7 +390,7 @@ const EventAgendaPage: React.FC = () => {
   };
 
   const updateStatus = (id: string, status: AgendaStatus) => {
-    if (isCancelled) return;
+    if (isReadOnly) return;
     setEntries((prev) =>
       prev.map((entry) => {
         if (entry.id !== id) {
@@ -439,8 +440,11 @@ const EventAgendaPage: React.FC = () => {
         </div>
       ) : null}
 
-      {isCancelled && (
-        <EventCancelledNotice detail="Las notificaciones quedan disponibles para monitoreo. No se pueden crear nuevas pruebas de plato ni recordatorios de anticipo para un evento cancelado." />
+      {isReadOnly && (
+        <EventCancelledNotice
+          title={isCancelled ? undefined : `${event.status}: modo solo lectura`}
+          detail="Las notificaciones quedan disponibles para monitoreo. No se pueden crear nuevas pruebas de plato ni recordatorios de anticipo."
+        />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -648,7 +652,7 @@ const EventAgendaPage: React.FC = () => {
                           className={`text-xs font-bold rounded-full px-2.5 py-1 border-none ${statusPillClass[entry.status]}`}
                           value={entry.status}
                           onChange={(eventTarget) => updateStatus(entry.id, eventTarget.target.value as AgendaStatus)}
-                          disabled={isCancelled}
+                          disabled={isReadOnly}
                         >
                           <option value="programado">{statusLabel.programado}</option>
                           <option value="enviado">{statusLabel.enviado}</option>
@@ -667,9 +671,9 @@ const EventAgendaPage: React.FC = () => {
 
         <aside className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
           <h4 className="text-xl font-display font-bold text-on-surface">Nueva notificacion</h4>
-          {isCancelled ? (
+          {isReadOnly ? (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-              El evento esta cancelado. Este formulario queda bloqueado.
+              Este evento esta en modo solo lectura. El formulario queda bloqueado.
             </div>
           ) : null}
 
@@ -683,7 +687,7 @@ const EventAgendaPage: React.FC = () => {
                 setNewCategory(nextCategory);
                 resetMilestoneByCategory(nextCategory);
               }}
-              disabled={isCancelled}
+              disabled={isReadOnly}
             >
               <option value="degustacion">Prueba de plato</option>
               <option value="anticipo">Recordatorio de anticipo</option>
@@ -698,7 +702,7 @@ const EventAgendaPage: React.FC = () => {
               value={newMilestone}
               maxLength={FORM_LIMITS.shortText}
               onChange={(eventTarget) => setNewMilestone(limitText(eventTarget.target.value, FORM_LIMITS.shortText))}
-              disabled={isCancelled}
+              disabled={isReadOnly}
             />
           </div>
 
@@ -709,7 +713,7 @@ const EventAgendaPage: React.FC = () => {
               type="datetime-local"
               value={newScheduledAt}
               onChange={(eventTarget) => setNewScheduledAt(eventTarget.target.value)}
-              disabled={isCancelled}
+              disabled={isReadOnly}
             />
           </div>
 
@@ -719,7 +723,7 @@ const EventAgendaPage: React.FC = () => {
               className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
               value={newChannel}
               onChange={(eventTarget) => setNewChannel(eventTarget.target.value as ReminderChannel)}
-              disabled={isCancelled}
+              disabled={isReadOnly}
             >
               <option value="whatsapp">WhatsApp</option>
               <option value="email">Email</option>
@@ -736,17 +740,17 @@ const EventAgendaPage: React.FC = () => {
               maxLength={FORM_LIMITS.longText}
               placeholder="Detalle opcional para el equipo..."
               onChange={(eventTarget) => setNewNotes(limitText(eventTarget.target.value, FORM_LIMITS.longText))}
-              disabled={isCancelled}
+              disabled={isReadOnly}
             ></textarea>
           </div>
 
           <button
             type="button"
             className="w-full bg-[#191C1D] text-white px-6 py-3 rounded-md text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled={isCancelled || saving || !newMilestone.trim() || !newScheduledAt}
+            disabled={isReadOnly || saving || !newMilestone.trim() || !newScheduledAt}
             onClick={createEntry}
           >
-            {isCancelled ? 'Evento cancelado' : saving ? 'Programando...' : 'Programar notificacion'}
+            {isReadOnly ? event.status : saving ? 'Programando...' : 'Programar notificacion'}
           </button>
         </aside>
       </div>

@@ -5,7 +5,9 @@ export type EventStatus =
   | 'Cotización aprobada'
   | 'Pendiente anticipo'
   | 'Confirmado'
-  | 'Cancelado';
+  | 'Cancelado'
+  | 'Finalizado'
+  | 'Vencido';
 
 export type EventKind = 'Boda' | 'Cumpleaños' | 'Bautizo' | 'Corporativo' | 'Social';
 export type EventsTab = 'Todos' | 'Activos' | 'Pendientes' | 'Confirmados' | 'Cancelados';

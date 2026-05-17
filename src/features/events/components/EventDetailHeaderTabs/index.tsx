@@ -55,11 +55,12 @@ const EventDetailHeaderTabs: React.FC<EventDetailHeaderTabsProps> = ({
 
   const isCancelled = event.status === 'Cancelado';
   const isConfirmed = event.status === 'Confirmado';
+  const isReadOnly = isCancelled || event.status === 'Finalizado' || event.status === 'Vencido';
   const isAdmin = hasRole('ADMINISTRADOR');
   const canConfirmByRole = hasRole(['ADMINISTRADOR', 'GERENTE', 'TESORERO']);
   const canConfirmByState = event.status.toLowerCase().includes('aprobada') || event.status === 'Pendiente anticipo';
-  const canCancel = isAdmin && !isCancelled;
-  const canConfirm = canConfirmByRole && canConfirmByState && !isConfirmed && !isCancelled;
+  const canCancel = isAdmin && !isReadOnly;
+  const canConfirm = canConfirmByRole && canConfirmByState && !isConfirmed && !isReadOnly;
   const displayedCreator =
     creatorName ?? event.createdBy ?? (event.creatorId ? formatShortId(event.creatorId, 'USR-') : 'Sin usuario asociado');
 
@@ -179,7 +180,7 @@ const EventDetailHeaderTabs: React.FC<EventDetailHeaderTabsProps> = ({
                 <span className="material-symbols-outlined align-middle text-lg text-[#A8841C]">edit</span>
                 <span className="ml-2">Editar</span>
               </button>
-              {canConfirmByRole && !isCancelled && !isConfirmed ? (
+              {canConfirmByRole && !isReadOnly && !isConfirmed ? (
                 <button
                   type="button"
                   onClick={handleConfirm}

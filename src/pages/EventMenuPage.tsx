@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import EventCancelledNotice from '@/features/events/components/EventCancelledNotice';
 import EventDetailHeaderTabs from '@/features/events/components/EventDetailHeaderTabs';
 import { buildEventSummaryData } from '@/features/events/data/eventSummary';
+import { isEventReadOnly } from '@/features/events/utils/eventStatus';
 import type {
   CatalogoBasicoResponse,
   ClienteResponse,
@@ -78,6 +79,7 @@ const EventMenuPage: React.FC = () => {
 
   const guests = evento?.reservas.find((reserva) => reserva.vigente)?.numInvitados ?? 0;
   const isCancelled = evento?.estado === 'CANCELADO';
+  const isReadOnly = isEventReadOnly(evento);
 
   useEffect(() => {
     if (!eventId) return;
@@ -231,7 +233,7 @@ const EventMenuPage: React.FC = () => {
   }, [addMomentoId, addPlatoId, platosDisponiblesParaMomento]);
 
   const agregarItem = () => {
-    if (isCancelled) return;
+    if (isReadOnly) return;
     if (!addMomentoId || !addPlatoId) return;
 
     const plato = platosDisponiblesParaMomento.find((candidate) => candidate.id === addPlatoId);
@@ -266,7 +268,7 @@ const EventMenuPage: React.FC = () => {
   };
 
   const quitarItem = (momentoId: string, localId: string) => {
-    if (isCancelled) return;
+    if (isReadOnly) return;
     setSelecciones((prev) =>
       prev
         .map((seleccion) =>
@@ -279,7 +281,7 @@ const EventMenuPage: React.FC = () => {
   };
 
   const actualizarCantidad = (momentoId: string, localId: string, cantidad: number) => {
-    if (isCancelled) return;
+    if (isReadOnly) return;
     setSelecciones((prev) =>
       prev.map((seleccion) =>
         seleccion.tipoMomentoId === momentoId
@@ -295,7 +297,7 @@ const EventMenuPage: React.FC = () => {
   };
 
   const actualizarExcepciones = (momentoId: string, localId: string, excepciones: string) => {
-    if (isCancelled) return;
+    if (isReadOnly) return;
     setSelecciones((prev) =>
       prev.map((seleccion) =>
         seleccion.tipoMomentoId === momentoId
@@ -312,8 +314,8 @@ const EventMenuPage: React.FC = () => {
 
   const handleGuardarMenu = async () => {
     if (!evento) return;
-    if (isCancelled) {
-      setError('No se puede modificar el menu de un evento cancelado.');
+    if (isReadOnly) {
+      setError('No se puede modificar el menu de un evento en modo solo lectura.');
       return;
     }
 
@@ -402,12 +404,15 @@ const EventMenuPage: React.FC = () => {
         onEventUpdated={setEvento}
       />
 
-      {isCancelled && (
-        <EventCancelledNotice detail="El menu queda disponible solo para consulta historica. No se pueden agregar, quitar o guardar platos en un evento cancelado." />
+      {isReadOnly && (
+        <EventCancelledNotice
+          title={isCancelled ? undefined : `${event.status}: modo solo lectura`}
+          detail="El menu queda disponible solo para consulta historica. No se pueden agregar, quitar o guardar platos."
+        />
       )}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <main className={`space-y-6 ${isCancelled ? 'opacity-75' : ''}`}>
+        <main className={`space-y-6 ${isReadOnly ? 'opacity-75' : ''}`}>
           {error && (
             <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
               {error}
@@ -470,7 +475,7 @@ const EventMenuPage: React.FC = () => {
                         key={momento.id}
                         type="button"
                         onClick={() => setAddMomentoId(momento.id)}
-                        disabled={isCancelled}
+                        disabled={isReadOnly}
                         className={`rounded-2xl border px-4 py-3 text-left transition ${
                           selected
                             ? 'border-[#A8841C] bg-[#f6efd5] ring-4 ring-[#A8841C]/10'
@@ -503,7 +508,7 @@ const EventMenuPage: React.FC = () => {
                             key={plato.id}
                             type="button"
                             onClick={() => setAddPlatoId(plato.id)}
-                            disabled={isCancelled}
+                            disabled={isReadOnly}
                             className={`rounded-2xl border p-4 text-left transition ${
                               selected
                                 ? 'border-[#A8841C] bg-white ring-4 ring-[#A8841C]/10'
@@ -542,7 +547,7 @@ const EventMenuPage: React.FC = () => {
                         onChange={(eventTarget) =>
                           setAddCantidad(toLimitedNumber(eventTarget.target.value, FORM_LIMITS.quantityDigits, 1))
                         }
-                        disabled={isCancelled}
+                        disabled={isReadOnly}
                       />
                     </div>
                     <div>
@@ -556,14 +561,14 @@ const EventMenuPage: React.FC = () => {
                         onChange={(eventTarget) =>
                           setAddExcepciones(limitText(eventTarget.target.value, FORM_LIMITS.mediumText))
                         }
-                        disabled={isCancelled}
+                        disabled={isReadOnly}
                       />
                     </div>
                     <button
                       className="self-end rounded-xl bg-[#A8841C] px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#8f7118] disabled:opacity-50"
                       type="button"
                       onClick={agregarItem}
-                      disabled={isCancelled || !addMomentoId || !addPlatoId || platosDisponiblesParaMomento.length === 0}
+                      disabled={isReadOnly || !addMomentoId || !addPlatoId || platosDisponiblesParaMomento.length === 0}
                     >
                       Agregar
                     </button>
@@ -633,7 +638,7 @@ const EventMenuPage: React.FC = () => {
                               className="self-start text-sm font-black text-red-700 hover:text-red-800"
                               type="button"
                               onClick={() => quitarItem(seleccion.tipoMomentoId, item.localId)}
-                              disabled={isCancelled}
+                              disabled={isReadOnly}
                             >
                               Quitar
                             </button>
@@ -657,7 +662,7 @@ const EventMenuPage: React.FC = () => {
                                     toLimitedNumber(eventTarget.target.value, FORM_LIMITS.quantityDigits, 1),
                                   )
                                 }
-                                disabled={isCancelled}
+                                disabled={isReadOnly}
                               />
                             </div>
                             <div>
@@ -675,7 +680,7 @@ const EventMenuPage: React.FC = () => {
                                     limitText(eventTarget.target.value, FORM_LIMITS.mediumText),
                                   )
                                 }
-                                disabled={isCancelled}
+                                disabled={isReadOnly}
                               />
                             </div>
                             <div>
@@ -705,7 +710,7 @@ const EventMenuPage: React.FC = () => {
               maxLength={FORM_LIMITS.longText}
               placeholder="Ej: menu infantil, personas vegetarianas, alergias"
               onChange={(eventTarget) => setNotasGenerales(limitText(eventTarget.target.value, FORM_LIMITS.longText))}
-              disabled={isCancelled}
+              disabled={isReadOnly}
             />
           </section>
         </main>
@@ -739,9 +744,9 @@ const EventMenuPage: React.FC = () => {
           className="w-full rounded-xl bg-[#A8841C] px-8 py-2.5 text-sm font-black text-white shadow-sm transition-colors hover:bg-[#8f7118] disabled:opacity-50 sm:w-auto"
           type="button"
           onClick={handleGuardarMenu}
-          disabled={isCancelled || saving || totalItems === 0}
+          disabled={isReadOnly || saving || totalItems === 0}
         >
-          {isCancelled ? 'Evento cancelado' : saving ? 'Guardando...' : 'Guardar menu'}
+          {isReadOnly ? event.status : saving ? 'Guardando...' : 'Guardar menu'}
         </button>
       </footer>
     </section>

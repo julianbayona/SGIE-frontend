@@ -24,6 +24,8 @@ const eventStatusTone: Record<EventStatus, StatusBadgeTone> = {
   'Pendiente anticipo': 'orange',
   Confirmado: 'emerald',
   Cancelado: 'slate',
+  Finalizado: 'neutral',
+  Vencido: 'red',
 };
 
 const quoteStatusTone: Record<QuoteStatus, StatusBadgeTone> = {
