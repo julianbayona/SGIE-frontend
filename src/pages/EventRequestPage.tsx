@@ -67,6 +67,7 @@ function EventRequestPage() {
   const [clienteResultados, setClienteResultados] = useState<ClienteResponse[]>([]);
   const [searchingCliente, setSearchingCliente] = useState(false);
   const [isClienteFormOpen, setIsClienteFormOpen] = useState(false);
+  const [clienteFormError, setClienteFormError] = useState<string | null>(null);
   const [fechaHoraInicio, setFechaHoraInicio] = useState('');
   const [fechaHoraFin, setFechaHoraFin] = useState('');
   const [numPersonas, setNumPersonas] = useState('80');
@@ -144,8 +145,10 @@ function EventRequestPage() {
   const hasValidDates = Boolean(
     fechaHoraInicio && fechaHoraFin && new Date(fechaHoraFin) > new Date(fechaHoraInicio),
   );
+  const invitados = Number(numPersonas);
+  const hasValidGuestCount = Number.isInteger(invitados) && invitados > 0;
   const canCreate = Boolean(
-    clienteEncontrado && selectedVenueId && tipoEventoId && tipoComidaId && hasValidDates,
+    clienteEncontrado && selectedVenueId && tipoEventoId && tipoComidaId && hasValidDates && hasValidGuestCount,
   );
   const durationLabel = getDurationLabel(fechaHoraInicio, fechaHoraFin);
   const customerSearchText = customerQuery.trim();
@@ -158,13 +161,17 @@ function EventRequestPage() {
       setError('Define fecha y hora de inicio y fin para consultar disponibilidad.');
       return;
     }
+    if (!hasValidGuestCount) {
+      setError('Define un numero de invitados mayor a cero para consultar disponibilidad.');
+      return;
+    }
 
     try {
       setError(null);
       const disponibles = await salonesApi.consultarDisponibilidad({
         fechaHoraInicio: toLocalDateTime(fechaHoraInicio),
         fechaHoraFin: toLocalDateTime(fechaHoraFin),
-        capacidadMinima: Number(numPersonas) || undefined,
+        capacidadMinima: invitados,
       });
       setSalones(disponibles.filter((salon) => salon.activo));
       if (selectedVenueId && !disponibles.some((salon) => salon.id === selectedVenueId)) {
@@ -179,6 +186,10 @@ function EventRequestPage() {
     if (!clienteEncontrado || !selectedVenueId || !tipoEventoId || !tipoComidaId) return;
     if (!hasValidDates) {
       setError('La fecha final debe ser posterior a la fecha inicial.');
+      return;
+    }
+    if (!hasValidGuestCount) {
+      setError('Debes indicar un numero de invitados mayor a cero.');
       return;
     }
 
@@ -196,7 +207,7 @@ function EventRequestPage() {
       });
       await eventosApi.crearReserva(evento.id, {
         salonId: selectedVenueId,
-        numInvitados: Number(numPersonas) || 1,
+        numInvitados: invitados,
         fechaHoraInicio: inicio,
         fechaHoraFin: fin,
       });
@@ -214,6 +225,7 @@ function EventRequestPage() {
   const handleRegistrarCliente = async (values: ClientFormValues) => {
     try {
       setError(null);
+      setClienteFormError(null);
       const nuevoCliente = await clientesApi.registrar({
         cedula: values.idNumber,
         nombreCompleto: values.fullName,
@@ -225,10 +237,11 @@ function EventRequestPage() {
       setCustomerQuery(nuevoCliente.nombreCompleto);
       setClienteResultados([]);
       setIsClienteFormOpen(false);
+      setClienteFormError(null);
       toast.success('Cliente registrado', `${nuevoCliente.nombreCompleto} quedo seleccionado para la solicitud.`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No fue posible registrar el cliente.';
-      setError(message);
+      setClienteFormError(message);
       toast.error('No fue posible registrar el cliente', message);
     }
   };
@@ -340,7 +353,10 @@ function EventRequestPage() {
                           type="button"
                           variant="secondary"
                           className="mt-3 border-[#A8841C]/25 bg-[#A8841C] text-white hover:bg-[#8f7118]"
-                          onClick={() => setIsClienteFormOpen(true)}
+                          onClick={() => {
+                            setClienteFormError(null);
+                            setIsClienteFormOpen(true);
+                          }}
                         >
                           Registrar cliente con estos datos
                         </Button>
@@ -414,7 +430,10 @@ function EventRequestPage() {
                     type="button"
                     variant="secondary"
                     className="mt-6 border-[#A8841C]/25 bg-[#A8841C] text-white hover:bg-[#8f7118]"
-                    onClick={() => setIsClienteFormOpen(true)}
+                    onClick={() => {
+                      setClienteFormError(null);
+                      setIsClienteFormOpen(true);
+                    }}
                   >
                     Registrar nuevo cliente
                   </Button>
@@ -462,6 +481,9 @@ function EventRequestPage() {
                     onFocus={selectInputText}
                     onChange={(event) => setNumPersonas(onlyDigits(event.target.value, FORM_LIMITS.quantityDigits))}
                   />
+                  {!hasValidGuestCount ? (
+                    <p className="text-xs font-semibold text-red-600">Debes indicar al menos 1 invitado.</p>
+                  ) : null}
                 </div>
                 <div className="space-y-2">
                   <label className={labelClass}>Tipo de evento</label>
@@ -593,7 +615,7 @@ function EventRequestPage() {
           <p className="text-sm font-semibold text-stone-500">
             {canCreate
               ? 'Todo listo para crear la solicitud.'
-              : 'Completa cliente, horario, tipo de evento, tipo de comida y salon.'}
+              : 'Completa cliente, horario, invitados, tipo de evento, tipo de comida y salon.'}
           </p>
           <div className="flex justify-end gap-3">
             <Button type="button" variant="ghost" onClick={() => navigate('/events')}>
@@ -612,7 +634,11 @@ function EventRequestPage() {
         initialClient={null}
         initialValues={clientInitialValues}
         idNumbersInUse={clienteResultados.map((cliente) => cliente.cedula)}
-        onCancel={() => setIsClienteFormOpen(false)}
+        error={clienteFormError}
+        onCancel={() => {
+          setIsClienteFormOpen(false);
+          setClienteFormError(null);
+        }}
         onSubmit={handleRegistrarCliente}
       />
     </div>

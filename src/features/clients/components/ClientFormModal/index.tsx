@@ -16,6 +16,7 @@ interface ClientFormModalProps {
   initialClient?: Client | null;
   initialValues?: Partial<ClientFormValues>;
   idNumbersInUse: string[];
+  error?: string | null;
   onCancel: () => void;
   onSubmit: (values: ClientFormValues) => void;
 }
@@ -39,6 +40,7 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
   initialClient,
   initialValues,
   idNumbersInUse,
+  error,
   onCancel,
   onSubmit,
 }) => {
@@ -117,6 +119,12 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
         </div>
 
         <div className="max-h-[calc(100dvh-14rem)] space-y-5 overflow-y-auto p-6">
+          {error ? (
+            <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+              {error}
+            </div>
+          ) : null}
+
           <section className="space-y-4">
             <h4 className="text-xs font-bold uppercase tracking-widest text-text3">Identificación</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
