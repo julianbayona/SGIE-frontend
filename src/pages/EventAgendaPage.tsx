@@ -414,7 +414,7 @@ const EventAgendaPage: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (error && !evento) {
     return (
       <section className="space-y-8 pb-24">
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -432,6 +432,12 @@ const EventAgendaPage: React.FC = () => {
         onEventCancelled={setEvento}
         onEventUpdated={setEvento}
       />
+
+      {error ? (
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {error}
+        </div>
+      ) : null}
 
       {isCancelled && (
         <EventCancelledNotice detail="Las notificaciones quedan disponibles para monitoreo. No se pueden crear nuevas pruebas de plato ni recordatorios de anticipo para un evento cancelado." />
