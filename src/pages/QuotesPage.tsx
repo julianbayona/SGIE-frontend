@@ -70,6 +70,7 @@ const QuotesPage: React.FC = () => {
 
             return cotizaciones.map((cotizacion) => ({
               id: cotizacion.id,
+              eventId: evento.id,
               sortDate: evento.fechaHoraInicio,
               eventName: `${tipoEvento?.nombre ?? 'Evento'} - ${new Date(evento.fechaHoraInicio).toLocaleDateString('es-CO')}`,
               eventMeta: formatShortId(evento.id, 'EV-'),

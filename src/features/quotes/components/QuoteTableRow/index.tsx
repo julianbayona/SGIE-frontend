@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import type { QuoteRecord } from '@/features/quotes/types';
 import { formatShortId } from '@/utils/formatters';
@@ -44,12 +45,12 @@ const QuoteTableRow: React.FC<QuoteTableRowProps> = ({ quote }) => {
 
       <td className="px-6 py-4 text-right">
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
+          <Link
+            to={`/events/${quote.eventId}/cotizaciones/${quote.id}`}
             className="px-3 py-1.5 rounded border border-border text-xs font-semibold text-text2 hover:bg-panel hover:text-gold transition-colors"
           >
             Ver cotización
-          </button>
+          </Link>
         </div>
       </td>
     </tr>

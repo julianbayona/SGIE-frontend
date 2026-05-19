@@ -13,6 +13,7 @@ import EventMenuPage from './pages/EventMenuPage';
 import EventSectionPlaceholderPage from './pages/EventSectionPlaceholderPage';
 import EventMontagePage from './pages/EventMontagePage';
 import EventQuotePage from './pages/EventQuotePage';
+import EventQuoteDetailPage from './pages/EventQuoteDetailPage';
 import EventPaymentsPage from './pages/EventPaymentsPage';
 import EventAgendaPage from './pages/EventAgendaPage';
 import CatalogsPage from './pages/CatalogsPage';
@@ -66,6 +67,7 @@ function App() {
             <Route path="events/:eventId/agenda" element={<ProtectedRoute requiredRoles={['ADMINISTRADOR', 'GERENTE', 'TESORERO']}><EventAgendaPage /></ProtectedRoute>} />
             <Route path="events/:eventId/montaje" element={<ProtectedRoute requiredRoles={['ADMINISTRADOR', 'GERENTE', 'TESORERO']}><EventMontagePage /></ProtectedRoute>} />
             <Route path="events/:eventId/cotizacion" element={<ProtectedRoute requiredRoles={['ADMINISTRADOR', 'GERENTE', 'TESORERO']}><EventQuotePage /></ProtectedRoute>} />
+            <Route path="events/:eventId/cotizaciones/:quoteId" element={<ProtectedRoute requiredRoles={['ADMINISTRADOR', 'GERENTE', 'TESORERO']}><EventQuoteDetailPage /></ProtectedRoute>} />
             
             {/* Pagos - Solo ADMINISTRADOR, GERENTE y TESORERO */}
             <Route

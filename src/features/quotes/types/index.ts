@@ -4,6 +4,7 @@ export type QuotesTab = 'Recientes' | 'Pendientes' | 'Aprobadas';
 
 export interface QuoteRecord {
   id: string;
+  eventId: string;
   sortDate: string;
   eventName: string;
   eventMeta: string;

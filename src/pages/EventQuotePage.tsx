@@ -10,6 +10,7 @@ import salonesApi from '@/api/salones';
 import catalogosApi from '@/api/catalogos';
 import { useToast } from '@/components/ui/ToastProvider';
 import { getEventDisplayStatus, isEventReadOnly } from '@/features/events/utils/eventStatus';
+import QuoteHistoryPanel from '@/features/quotes/components/QuoteHistoryPanel';
 import type {
   EventoResponse,
   CotizacionResponse,
@@ -44,6 +45,7 @@ const EventQuotePage: React.FC = () => {
 
   const [evento, setEvento] = useState<EventoResponse | null>(null);
   const [cotizacion, setCotizacion] = useState<CotizacionResponse | null>(null);
+  const [historial, setHistorial] = useState<CotizacionResponse[]>([]);
   const [reservaRaizId, setReservaRaizId] = useState<string | null>(null);
   const [cliente, setCliente] = useState<ClienteResponse | null>(null);
   const [salon, setSalon] = useState<SalonResponse | null>(null);
@@ -89,6 +91,11 @@ const EventQuotePage: React.FC = () => {
         setCliente(clienteData);
         setTipoEvento(tipoEventoData);
         setSalon(salonData);
+
+        const historialData = await cotizacionesApi.listarPorEvento(eventoData.id);
+        if (!cancelled) {
+          setHistorial(historialData);
+        }
 
         try {
           const cotizacionData = await cotizacionesApi.obtenerVigente(reservaId);
@@ -161,6 +168,11 @@ const EventQuotePage: React.FC = () => {
   const menuItems = useMemo(() => quoteItems.filter((item) => item.source === 'menu'), [quoteItems]);
   const montageItems = useMemo(() => quoteItems.filter((item) => item.source === 'montaje'), [quoteItems]);
 
+  const recargarHistorial = async () => {
+    if (!eventId) return;
+    setHistorial(await cotizacionesApi.listarPorEvento(eventId));
+  };
+
   const handleGenerarBorrador = async () => {
     if (!reservaRaizId) return;
     if (isReadOnly) {
@@ -178,6 +190,7 @@ const EventQuotePage: React.FC = () => {
       });
 
       setCotizacion(nuevaCotizacion);
+      await recargarHistorial();
       toast.success('Borrador generado', 'La cotizacion quedo creada desde menu y montaje.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al generar borrador';
@@ -211,6 +224,7 @@ const EventQuotePage: React.FC = () => {
 
       const cotizacionActualizada = await cotizacionesApi.generarDocumento(cotizacion.id);
       setCotizacion(cotizacionActualizada);
+      await recargarHistorial();
       toast.success('Cotizacion generada', 'El documento quedo listo para descargar o enviar.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al generar la cotizacion';
@@ -233,6 +247,7 @@ const EventQuotePage: React.FC = () => {
       });
 
       setCotizacion(cotizacionActualizada);
+      await recargarHistorial();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al ajustar precio');
     } finally {
@@ -253,6 +268,7 @@ const EventQuotePage: React.FC = () => {
 
       const cotizacionActualizada = await cotizacionesApi.enviar(cotizacion.id);
       setCotizacion(cotizacionActualizada);
+      await recargarHistorial();
       if (evento) {
         setEvento(await eventosApi.obtenerPorId(evento.id));
       }
@@ -278,6 +294,7 @@ const EventQuotePage: React.FC = () => {
       setError(null);
       const cotizacionActualizada = await cotizacionesApi.enviarEmail(cotizacion.id);
       setCotizacion(cotizacionActualizada);
+      await recargarHistorial();
       toast.success('Email programado', 'La cotizacion quedo registrada para envio por correo.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al enviar cotizacion por email';
@@ -314,6 +331,7 @@ const EventQuotePage: React.FC = () => {
       setError(null);
       const cotizacionActualizada = await cotizacionesApi.aceptar(cotizacion.id);
       setCotizacion(cotizacionActualizada);
+      await recargarHistorial();
       if (evento) {
         setEvento(await eventosApi.obtenerPorId(evento.id));
       }
@@ -447,6 +465,8 @@ const EventQuotePage: React.FC = () => {
             </Link>
           </div>
         </div>
+
+        {eventId && <QuoteHistoryPanel eventId={eventId} quotes={historial} />}
       </section>
     );
   }
@@ -709,6 +729,15 @@ const EventQuotePage: React.FC = () => {
               <StatusBadge type="quote" status={quoteStatus} />
             </div>
           </div>
+
+          {eventId && (
+            <QuoteHistoryPanel
+              eventId={eventId}
+              quotes={historial}
+              selectedQuoteId={cotizacion.id}
+              variant="compact"
+            />
+          )}
         </aside>
       </div>
 
