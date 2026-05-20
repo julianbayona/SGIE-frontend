@@ -15,16 +15,22 @@ const statusStyles: Record<EventStatus, { bg: string; border: string; dot: strin
 
 interface EventItemProps {
   event: Event;
+  onSelect?: (event: Event) => void;
 }
 
-const EventItem: React.FC<EventItemProps> = ({ event }) => {
+const EventItem: React.FC<EventItemProps> = ({ event, onSelect }) => {
   const style = statusStyles[event.status] || statusStyles.Pendiente;
 
   return (
-    <div className={`flex items-center gap-1.5 ${style.bg} ${style.border} border px-2 py-1 rounded text-[10px] font-semibold ${style.text} truncate`}>
+    <button
+      className={`flex w-full items-center gap-1.5 ${style.bg} ${style.border} border px-2 py-1 rounded text-left text-[10px] font-semibold ${style.text} truncate transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-[#A8841C]/40`}
+      type="button"
+      onClick={() => onSelect?.(event)}
+      title={`${event.title} - ${event.salon}`}
+    >
       <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`}></span>
       <span className="truncate">{event.title}</span>
-    </div>
+    </button>
   );
 };
 

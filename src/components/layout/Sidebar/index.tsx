@@ -19,14 +19,18 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-black text-white flex flex-col z-40 border-r border-white/10">
-      <div className="px-4 py-5">
-        <div className="text-2xl font-display text-primary-gold leading-none">CB</div>
-        <p className="text-[10px] text-stone-400 font-semibold uppercase tracking-widest mt-1">SGIE</p>
+      <div className="px-5 py-6">
+        <div className="flex flex-col items-center gap-3">
+          <img
+            alt="Club Boyaca"
+            className="max-h-24 w-full object-contain"
+            src="/brand/Club-Boyaca-Logotipo.webp"
+          />
+          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-stone-400">SGIE</p>
+        </div>
       </div>
 
-      <div className="px-4 py-2 mt-2">
-        <p className="text-stone-500 text-[10px] uppercase tracking-widest font-medium">Gestion de eventos</p>
-      </div>
+      <div className="mx-4 mb-4 border-t border-white/10" />
 
       <nav className="flex-1 px-2 space-y-1">
         {visibleItems.map((item) => (

@@ -2,9 +2,14 @@ import React from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isToday } from 'date-fns';
 import { useCalendarStore } from '@/store/calendarStore';
 import { useCalendar } from '../../hooks/useCalendar';
+import { Event } from '../../types';
 import EventItem from '../EventItem';
 
-const MonthView: React.FC = () => {
+interface MonthViewProps {
+  onSelectEvent?: (event: Event) => void;
+}
+
+const MonthView: React.FC<MonthViewProps> = ({ onSelectEvent }) => {
   const { selectedDate } = useCalendarStore();
   const { events, loading } = useCalendar();
 
@@ -39,7 +44,11 @@ const MonthView: React.FC = () => {
               {format(day, 'd')}
             </p>
             <div className="mt-1 flex flex-col gap-1">
-              {loading ? <p className="text-xs">Cargando...</p> : dayEvents.map((event) => <EventItem key={event.id} event={event} />)}
+              {loading ? (
+                <p className="text-xs">Cargando...</p>
+              ) : (
+                dayEvents.map((event) => <EventItem key={event.id} event={event} onSelect={onSelectEvent} />)
+              )}
             </div>
           </div>
         );

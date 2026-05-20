@@ -1,42 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { eventStatuses, StatusBadge } from '@/components/ui/StatusBadge';
 import { useCalendarStore } from '@/store/calendarStore';
+import type { Event } from '../../types';
 import CalendarHeader from '../CalendarHeader';
+import DayView from '../DayView';
+import EventPreviewModal from '../EventPreviewModal';
 import MonthView from '../MonthView';
 import WeekView from '../WeekView';
-import DayView from '../DayView';
 
 const CalendarView: React.FC = () => {
   const { view } = useCalendarStore();
-  const visibleEventStatuses = eventStatuses.filter(
-    (status) => status !== 'Esperando selección de menú'
-  );
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const visibleEventStatuses = eventStatuses.filter((status) => !status.startsWith('Esperando'));
 
   const renderView = () => {
     switch (view) {
       case 'month':
-        return <MonthView />;
+        return <MonthView onSelectEvent={setSelectedEvent} />;
       case 'week':
-        return <WeekView />;
+        return <WeekView onSelectEvent={setSelectedEvent} />;
       case 'day':
-        return <DayView />;
+        return <DayView onSelectEvent={setSelectedEvent} />;
       default:
-        return <MonthView />;
+        return <MonthView onSelectEvent={setSelectedEvent} />;
     }
   };
 
   return (
-    <div className="col-span-12 lg:col-span-7 xl:col-span-8 bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden shadow-sm flex flex-col">
+    <div className="col-span-12 flex flex-col overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm lg:col-span-7 xl:col-span-8">
       <CalendarHeader />
-      <div className="overflow-y-auto max-h-[600px] custom-scrollbar">
-        {renderView()}
-      </div>
-      <div className="flex flex-wrap items-center gap-2 border-t border-outline-variant/20 px-4 py-3 bg-surface-container-lowest">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-text3 mr-1">Estados</span>
+      <div className="custom-scrollbar max-h-[600px] overflow-y-auto">{renderView()}</div>
+      <div className="flex flex-wrap items-center gap-2 border-t border-outline-variant/20 bg-surface-container-lowest px-4 py-3">
+        <span className="mr-1 text-[10px] font-bold uppercase tracking-widest text-text3">Estados</span>
         {visibleEventStatuses.map((status) => (
           <StatusBadge key={status} type="event" status={status} />
         ))}
       </div>
+      <EventPreviewModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </div>
   );
 };
