@@ -1,27 +1,38 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import EventCancelledNotice from '@/features/events/components/EventCancelledNotice';
-import EventDetailHeaderTabs from '@/features/events/components/EventDetailHeaderTabs';
-import eventosApi from '@/api/eventos';
-import cotizacionesApi from '@/api/cotizaciones';
-import clientesApi from '@/api/clientes';
-import salonesApi from '@/api/salones';
+
 import catalogosApi from '@/api/catalogos';
-import { useToast } from '@/components/ui/ToastProvider';
-import { getEventDisplayStatus, isEventReadOnly } from '@/features/events/utils/eventStatus';
-import QuoteHistoryPanel from '@/features/quotes/components/QuoteHistoryPanel';
+import clientesApi from '@/api/clientes';
+import cotizacionesApi from '@/api/cotizaciones';
+import eventosApi from '@/api/eventos';
+import salonesApi from '@/api/salones';
 import type {
-  EventoResponse,
+  CatalogoBasicoResponse,
+  ClienteResponse,
   CotizacionResponse,
   EstadoCotizacion,
-  ClienteResponse,
+  EventoResponse,
   SalonResponse,
-  CatalogoBasicoResponse,
 } from '@/api/types';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useToast } from '@/components/ui/ToastProvider';
+import EventCancelledNotice from '@/features/events/components/EventCancelledNotice';
+import EventDetailHeaderTabs from '@/features/events/components/EventDetailHeaderTabs';
+import { getEventDisplayStatus, isEventReadOnly } from '@/features/events/utils/eventStatus';
+import QuoteHistoryPanel from '@/features/quotes/components/QuoteHistoryPanel';
 import type { QuoteStatus } from '@/features/quotes/types';
-import { formatShortId } from '@/utils/formatters';
 import { FORM_LIMITS, numberInputValue, selectInputText, toLimitedNumber } from '@/utils/formLimits';
+import { formatShortId } from '@/utils/formatters';
+
+type QuoteItemView = {
+  id: string;
+  concept: string;
+  source: 'salon' | 'menu' | 'montaje';
+  pricingMode: 'servicio' | 'unidad';
+  quantity: number;
+  unitBasePrice: number;
+  unitAdjustedPrice: number;
+};
 
 const estadoMap: Record<EstadoCotizacion, QuoteStatus> = {
   BORRADOR: 'Borrador',
@@ -38,6 +49,12 @@ const formatCurrency = (value: number): string =>
     currency: 'COP',
     maximumFractionDigits: 0,
   }).format(value);
+
+const sourceLabel = (source: QuoteItemView['source']): string => {
+  if (source === 'salon') return 'Salon';
+  if (source === 'menu') return 'Menu';
+  return 'Montaje';
+};
 
 const EventQuotePage: React.FC = () => {
   const { eventId } = useParams();
@@ -72,7 +89,7 @@ const EventQuotePage: React.FC = () => {
 
         const reserva = eventoData.reservas.find((item) => item.vigente);
         if (!reserva) {
-          setError('No hay reserva activa para este evento');
+          setError('No hay reserva activa para este evento.');
           setLoading(false);
           return;
         }
@@ -99,22 +116,16 @@ const EventQuotePage: React.FC = () => {
 
         try {
           const cotizacionData = await cotizacionesApi.obtenerVigente(reservaId);
-          if (!cancelled) {
-            setCotizacion(cotizacionData);
-          }
+          if (!cancelled) setCotizacion(cotizacionData);
         } catch {
-          if (!cancelled) {
-            setCotizacion(null);
-          }
+          if (!cancelled) setCotizacion(null);
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Error al cargar datos');
+          setError(err instanceof Error ? err.message : 'Error al cargar datos.');
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     })();
 
@@ -129,25 +140,25 @@ const EventQuotePage: React.FC = () => {
   const canEditPrices = cotizacion && !isReadOnly ? ['BORRADOR', 'GENERADA', 'ENVIADA'].includes(cotizacion.estado) : false;
   const quoteStatus = cotizacion ? estadoMap[cotizacion.estado] : 'Borrador';
 
-  const adjustedTotal = cotizacion?.valorTotal || 0;
-  const baseTotal = cotizacion?.valorSubtotal || 0;
+  const adjustedTotal = Number(cotizacion?.valorTotal || 0);
+  const baseTotal = Number(cotizacion?.valorSubtotal || 0);
+  const discountTotal = Number(cotizacion?.descuento || 0);
   const deltaTotal = adjustedTotal - baseTotal;
   const advanceValue = Math.round((adjustedTotal * advancePercent) / 100);
   const remainingValue = adjustedTotal - advanceValue;
 
-  const quoteItems = useMemo(() => {
+  const quoteItems = useMemo<QuoteItemView[]>(() => {
     if (!cotizacion) return [];
 
     return cotizacion.items.map((item) => {
-      let source: 'salon' | 'menu' | 'montaje' = 'montaje';
-      let pricingMode: 'servicio' | 'unidad' = 'unidad';
+      let source: QuoteItemView['source'] = 'montaje';
+      let pricingMode: QuoteItemView['pricingMode'] = 'unidad';
 
       if (item.tipoConcepto.includes('SALON') || item.tipoConcepto.includes('ALQUILER')) {
         source = 'salon';
         pricingMode = 'servicio';
       } else if (item.tipoConcepto.includes('MENU') || item.tipoConcepto.includes('PLATO')) {
         source = 'menu';
-        pricingMode = 'unidad';
       } else if (item.tipoConcepto.includes('MONTAJE') || item.tipoConcepto.includes('ADICIONAL')) {
         source = 'montaje';
         pricingMode = item.cantidad === 1 ? 'servicio' : 'unidad';
@@ -206,8 +217,9 @@ const EventQuotePage: React.FC = () => {
       setError('No se puede crear una nueva version de cotizacion para un evento en modo solo lectura.');
       return;
     }
+
     setError(
-      'Para crear una nueva version cambia Menu, Montaje o una reserva. Si solo necesitas negociar precio, ajusta los items permitidos en esta pantalla.'
+      'Para crear una nueva version cambia Menu, Montaje o la reserva. Si solo necesitas negociar precio, ajusta los items permitidos en esta pantalla.',
     );
   };
 
@@ -249,7 +261,7 @@ const EventQuotePage: React.FC = () => {
       setCotizacion(cotizacionActualizada);
       await recargarHistorial();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al ajustar precio');
+      setError(err instanceof Error ? err.message : 'Error al ajustar precio.');
     } finally {
       setSaving(false);
     }
@@ -269,9 +281,7 @@ const EventQuotePage: React.FC = () => {
       const cotizacionActualizada = await cotizacionesApi.enviar(cotizacion.id);
       setCotizacion(cotizacionActualizada);
       await recargarHistorial();
-      if (evento) {
-        setEvento(await eventosApi.obtenerPorId(evento.id));
-      }
+      if (evento) setEvento(await eventosApi.obtenerPorId(evento.id));
       toast.success('Cotizacion marcada como enviada', 'La cotizacion cambio al estado ENVIADA.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al enviar cotizacion';
@@ -313,7 +323,7 @@ const EventQuotePage: React.FC = () => {
       setError(null);
       await cotizacionesApi.descargarDocumento(cotizacion.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al descargar documento');
+      setError(err instanceof Error ? err.message : 'Error al descargar documento.');
     } finally {
       setSaving(false);
     }
@@ -332,9 +342,7 @@ const EventQuotePage: React.FC = () => {
       const cotizacionActualizada = await cotizacionesApi.aceptar(cotizacion.id);
       setCotizacion(cotizacionActualizada);
       await recargarHistorial();
-      if (evento) {
-        setEvento(await eventosApi.obtenerPorId(evento.id));
-      }
+      if (evento) setEvento(await eventosApi.obtenerPorId(evento.id));
       toast.success('Cotizacion aceptada', 'El evento ya puede continuar al flujo de confirmacion.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al aceptar cotizacion';
@@ -391,7 +399,7 @@ const EventQuotePage: React.FC = () => {
       creatorId: evento.usuarioCreadorId,
       eventType: tipoEvento?.nombre || 'Cargando...',
       guests: reserva?.numInvitados || 0,
-      venue: salon?.nombre || 'Sin salón',
+      venue: salon?.nombre || 'Sin salon',
       venueCapacity: salon ? `Capacidad: ${salon.capacidad} pax` : '',
       totalQuote: formatCurrency(adjustedTotal),
     };
@@ -400,9 +408,7 @@ const EventQuotePage: React.FC = () => {
   if (loading) {
     return (
       <section className="space-y-8 pb-28">
-        <div className="flex items-center justify-center py-16 text-on-surface-variant">
-          Cargando cotización...
-        </div>
+        <div className="flex items-center justify-center py-16 text-on-surface-variant">Cargando cotizacion...</div>
       </section>
     );
   }
@@ -436,33 +442,57 @@ const EventQuotePage: React.FC = () => {
           <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
         )}
 
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-6 py-5 text-sm text-amber-800">
-          <p className="font-semibold">No hay cotización vigente para esta reserva.</p>
-          <p className="mt-1">
-            Menú y Montaje ya guardan lo solicitado para el evento, pero la cotización solo existe cuando generas un
-            borrador. Si editaste esos apartados después de una versión previa, esa cotización quedó sin vigencia.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              className="rounded-md bg-primary-gold px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-primary disabled:opacity-50"
-              type="button"
-              onClick={handleGenerarBorrador}
-              disabled={isReadOnly || saving || !reservaRaizId}
-            >
-              {isReadOnly ? event.status : saving ? 'Generando...' : 'Generar borrador'}
-            </button>
-            <Link
-              to={`/events/${eventId}/menu`}
-              className="rounded-md border border-amber-300 bg-white px-4 py-2.5 text-sm font-semibold text-amber-900 hover:bg-amber-100"
-            >
-              Revisar Menú
-            </Link>
-            <Link
-              to={`/events/${eventId}/montaje`}
-              className="rounded-md border border-amber-300 bg-white px-4 py-2.5 text-sm font-semibold text-amber-900 hover:bg-amber-100"
-            >
-              Revisar Montaje
-            </Link>
+        <div className="overflow-hidden rounded-2xl border border-[#A8841C]/25 bg-surface-container-lowest shadow-sm">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="p-7">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A8841C]">Cotizacion pendiente</p>
+              <h3 className="mt-2 font-display text-3xl font-bold text-on-surface">Crea el primer borrador</h3>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-on-surface-variant">
+                El borrador se arma con la reserva vigente, menu y montaje guardados. Si no has terminado esos pasos,
+                revisalos antes de generar la version economica.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <button
+                  className="rounded-md bg-[#A8841C] px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#8d6f15] disabled:cursor-not-allowed disabled:opacity-50"
+                  type="button"
+                  onClick={handleGenerarBorrador}
+                  disabled={isReadOnly || saving || !reservaRaizId}
+                >
+                  {isReadOnly ? event.status : saving ? 'Generando...' : 'Generar borrador'}
+                </button>
+                <Link
+                  to={`/events/${eventId}/menu`}
+                  className="rounded-md border border-stone-300 bg-white px-4 py-2.5 text-sm font-bold text-stone-700 transition hover:border-[#A8841C] hover:text-[#A8841C]"
+                >
+                  Revisar menu
+                </Link>
+                <Link
+                  to={`/events/${eventId}/montaje`}
+                  className="rounded-md border border-stone-300 bg-white px-4 py-2.5 text-sm font-bold text-stone-700 transition hover:border-[#A8841C] hover:text-[#A8841C]"
+                >
+                  Revisar montaje
+                </Link>
+              </div>
+            </div>
+
+            <aside className="border-t border-[#A8841C]/15 bg-[#fbf6e8] p-7 lg:border-l lg:border-t-0">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#7a5c09]">Checklist</p>
+              <div className="mt-4 space-y-3 text-sm text-[#4b3b12]">
+                <p className="flex gap-2">
+                  <span className="font-black text-[#A8841C]">1.</span>
+                  Menu definido para el cliente.
+                </p>
+                <p className="flex gap-2">
+                  <span className="font-black text-[#A8841C]">2.</span>
+                  Montaje y adicionales revisados.
+                </p>
+                <p className="flex gap-2">
+                  <span className="font-black text-[#A8841C]">3.</span>
+                  Borrador listo para ajustar precios.
+                </p>
+              </div>
+            </aside>
           </div>
         </div>
 
@@ -491,82 +521,79 @@ const EventQuotePage: React.FC = () => {
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
-      <div className="gap-6 lg:flex lg:items-start">
-        <div className="mb-20 flex-1 space-y-6">
-          <div className="rounded-lg border border-border bg-surface-container-lowest p-6 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Cotización activa</p>
-                <h3 className="mt-1 font-display text-2xl font-bold text-on-surface">
-                  {formatShortId(cotizacion.id, 'COT-')}
-                </h3>
-                <p className="mt-1 text-sm text-on-surface-variant">
-                  {event.title} - {event.dateLabel}
-                </p>
-              </div>
-              <StatusBadge type="quote" status={quoteStatus} size="md" />
-            </div>
-          </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="mb-20 space-y-6">
+          <div className="overflow-hidden rounded-2xl border border-[#A8841C]/25 bg-surface-container-lowest shadow-sm">
+            <div className="border-b border-[#A8841C]/15 bg-gradient-to-r from-[#fffaf0] to-white px-6 py-5">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A8841C]">Cotizacion activa</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    <h3 className="font-display text-3xl font-bold text-on-surface">
+                      {formatShortId(cotizacion.id, 'COT-')}
+                    </h3>
+                    <StatusBadge type="quote" status={quoteStatus} size="md" />
+                  </div>
+                  <p className="mt-2 text-sm text-on-surface-variant">
+                    Version vigente del evento. Ajusta precios aqui; cantidades y contenido se corrigen en menu o
+                    montaje.
+                  </p>
+                </div>
 
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-5 shadow-sm">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <h4 className="font-display text-base font-bold text-blue-900">Origen de los datos</h4>
-                <p className="mt-1 max-w-3xl text-sm text-blue-900">
-                  Esta cotización se genera desde Menú y Montaje. Para cambiar platos, cantidades o adicionales, edita
-                  esas pestañas; aquí solo se revisan precios, anticipo y acciones de la versión.
-                </p>
+                <div className="rounded-2xl border border-[#A8841C]/20 bg-white px-5 py-4 text-right shadow-sm">
+                  <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Total actual</p>
+                  <p className="mt-1 font-display text-3xl font-bold text-on-surface">{formatCurrency(adjustedTotal)}</p>
+                </div>
               </div>
-              <div className="flex shrink-0 gap-2">
-                <Link
-                  className="rounded-md border border-blue-300 bg-white px-3 py-2 text-sm font-bold text-blue-900 hover:bg-blue-100"
-                  to={`/events/${event.id}/menu`}
-                >
-                  Ir a Menú
-                </Link>
-                <Link
-                  className="rounded-md border border-blue-300 bg-white px-3 py-2 text-sm font-bold text-blue-900 hover:bg-blue-100"
-                  to={`/events/${event.id}/montaje`}
-                >
-                  Ir a Montaje
-                </Link>
+            </div>
+
+            <div className="grid gap-0 md:grid-cols-3">
+              <div className="border-b border-outline-variant/20 px-6 py-4 md:border-b-0 md:border-r">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Base calculada</p>
+                <p className="mt-1 font-display text-xl font-bold text-on-surface">{formatCurrency(baseTotal)}</p>
+              </div>
+              <div className="border-b border-outline-variant/20 px-6 py-4 md:border-b-0 md:border-r">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Descuento</p>
+                <p className="mt-1 font-display text-xl font-bold text-on-surface">{formatCurrency(discountTotal)}</p>
+              </div>
+              <div className="px-6 py-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Ajuste neto</p>
+                <p className={`mt-1 font-display text-xl font-bold ${deltaTotal >= 0 ? 'text-[#A8841C]' : 'text-green-text'}`}>
+                  {deltaTotal >= 0 ? '+' : '-'}
+                  {formatCurrency(Math.abs(deltaTotal))}
+                </p>
               </div>
             </div>
           </div>
 
           {!canEditPrices && (
-            <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Esta cotización está en estado <strong>{cotizacion.estado}</strong>. Los precios ya no se pueden editar
-              sobre esta versión.
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Esta cotizacion esta en estado <strong>{cotizacion.estado}</strong>. Los precios ya no se editan sobre
+              esta version.
             </div>
           )}
 
-          <div className="overflow-hidden rounded-lg border border-border bg-surface-container-lowest shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-border bg-surface-container-lowest shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/20 px-6 py-4">
               <div>
-                <h4 className="font-display text-lg font-bold text-on-surface">Detalle económico</h4>
-                <p className="mt-1 text-sm text-on-surface-variant">
-                  Las cantidades son de solo lectura porque pertenecen a Menú y Montaje. Los precios solo se ajustan
-                  mientras la cotización esté en estado BORRADOR, GENERADA o ENVIADA.
-                </p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#A8841C]">Items</p>
+                <h4 className="mt-1 font-display text-xl font-bold text-on-surface">Detalle economico</h4>
               </div>
-              {!canEditPrices && (
-                <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-bold text-stone-600">
-                  Documento no editable
-                </span>
-              )}
+              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-bold text-stone-600">
+                {quoteItems.length} item{quoteItems.length === 1 ? '' : 's'}
+              </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full min-w-[920px] text-left">
-                <thead className="bg-surface-container-low text-xs uppercase tracking-wider text-neutral-500">
+                <thead className="bg-[#f6f1e5] text-xs uppercase tracking-wider text-stone-600">
                   <tr>
                     <th className="px-6 py-3">Concepto</th>
                     <th className="px-4 py-3">Origen</th>
                     <th className="px-4 py-3">Cobro</th>
                     <th className="px-4 py-3 text-right">Cantidad</th>
                     <th className="px-4 py-3 text-right">Precio base</th>
-                    <th className="px-4 py-3 text-right">Precio ajustado</th>
+                    <th className="px-4 py-3 text-right">Precio aplicado</th>
                     <th className="px-6 py-3 text-right">Subtotal</th>
                   </tr>
                 </thead>
@@ -575,13 +602,13 @@ const EventQuotePage: React.FC = () => {
                     const hasAdjustment = item.unitAdjustedPrice !== item.unitBasePrice;
 
                     return (
-                      <tr key={item.id}>
+                      <tr key={item.id} className="transition-colors hover:bg-[#fffbf1]">
                         <td className="px-6 py-4">
                           <p className="font-semibold text-on-surface">{item.concept}</p>
                         </td>
                         <td className="px-4 py-4">
                           <span className="rounded-full bg-surface-container-low px-2.5 py-1 text-xs font-bold text-on-surface-variant">
-                            {item.source === 'salon' ? 'Salón' : item.source === 'menu' ? 'Menú' : 'Montaje'}
+                            {sourceLabel(item.source)}
                           </span>
                         </td>
                         <td className="px-4 py-4 text-sm text-on-surface-variant">
@@ -595,11 +622,11 @@ const EventQuotePage: React.FC = () => {
                         </td>
                         <td className="px-4 py-4 text-right">
                           <input
-                            className={`w-28 rounded-md border px-2 py-1.5 text-right text-sm ${
+                            className={`w-28 rounded-md border px-2 py-1.5 text-right text-sm font-semibold ${
                               canEditPrices
                                 ? 'bg-surface-container-low'
                                 : 'cursor-not-allowed bg-surface-container text-on-surface-variant'
-                            } ${hasAdjustment ? 'border-primary-gold/60' : 'border-outline-variant/40'}`}
+                            } ${hasAdjustment ? 'border-[#A8841C]/70 text-[#7a5c09]' : 'border-outline-variant/40'}`}
                             type="number"
                             min={0}
                             step={1000}
@@ -627,106 +654,83 @@ const EventQuotePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-surface-container-lowest p-6 shadow-sm">
-            <h4 className="mb-4 font-display text-lg font-bold text-on-surface">Condiciones de pago</h4>
-            <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-border bg-surface-container-lowest p-6 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <label className="mb-2 block text-xs font-bold text-neutral-700">Anticipo (%)</label>
-                <input
-                  className="w-full rounded-md border border-outline-variant/40 bg-surface-container-low px-3 py-2.5 text-sm"
-                  type="number"
-                  min={0}
-                  max={100}
-                  inputMode="numeric"
-                  value={numberInputValue(advancePercent)}
-                  onFocus={selectInputText}
-                  onChange={(eventTarget) => {
-                    const normalized = toLimitedNumber(eventTarget.target.value, FORM_LIMITS.percentDigits);
-                    setAdvancePercent(Math.min(100, Math.max(0, normalized)));
-                  }}
-                />
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#A8841C]">Pago inicial</p>
+                <h4 className="mt-1 font-display text-xl font-bold text-on-surface">Condiciones de anticipo</h4>
               </div>
-              <div>
-                <p className="mb-2 text-xs font-bold text-neutral-700">Anticipo requerido</p>
-                <p className="font-display text-xl font-bold text-green-text">{formatCurrency(advanceValue)}</p>
-              </div>
-              <div>
-                <p className="mb-2 text-xs font-bold text-neutral-700">Saldo restante</p>
-                <p className="font-display text-xl font-bold text-on-surface">{formatCurrency(remainingValue)}</p>
+              <div className="grid w-full grid-cols-1 gap-4 md:w-auto md:grid-cols-3 md:items-end">
+                <div>
+                  <label className="mb-2 block text-xs font-bold text-neutral-700">Anticipo (%)</label>
+                  <input
+                    className="w-full rounded-md border border-outline-variant/40 bg-surface-container-low px-3 py-2.5 text-sm"
+                    type="number"
+                    min={0}
+                    max={100}
+                    inputMode="numeric"
+                    value={numberInputValue(advancePercent)}
+                    onFocus={selectInputText}
+                    onChange={(eventTarget) => {
+                      const normalized = toLimitedNumber(eventTarget.target.value, FORM_LIMITS.percentDigits);
+                      setAdvancePercent(Math.min(100, Math.max(0, normalized)));
+                    }}
+                  />
+                </div>
+                <div>
+                  <p className="mb-2 text-xs font-bold text-neutral-700">Anticipo requerido</p>
+                  <p className="font-display text-xl font-bold text-green-text">{formatCurrency(advanceValue)}</p>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs font-bold text-neutral-700">Saldo restante</p>
+                  <p className="font-display text-xl font-bold text-on-surface">{formatCurrency(remainingValue)}</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <aside className="space-y-6 lg:sticky lg:top-[92px] lg:w-[330px]">
-          <div className="space-y-4 rounded-lg border border-border bg-surface-container-lowest p-5 shadow-sm">
-            <h4 className="font-display text-lg font-bold text-on-surface">Resumen financiero</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-on-surface-variant">Total base</span>
-                <span className="font-medium text-on-surface">{formatCurrency(baseTotal)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-on-surface-variant">Total ajustado</span>
-                <span className="font-medium text-on-surface">{formatCurrency(adjustedTotal)}</span>
-              </div>
-              <div className="flex justify-between border-t border-outline-variant/20 pt-2">
-                <span className="text-on-surface-variant">Ajuste neto</span>
-                <span className={`font-semibold ${deltaTotal >= 0 ? 'text-primary-gold' : 'text-green-text'}`}>
-                  {deltaTotal >= 0 ? '+' : '-'}
-                  {formatCurrency(Math.abs(deltaTotal))}
-                </span>
-              </div>
-            </div>
-          </div>
+        <aside className="space-y-6 xl:sticky xl:top-[92px]">
+          <div className="rounded-2xl border border-border bg-surface-container-lowest p-5 shadow-sm">
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#A8841C]">Contenido</p>
+            <h4 className="mt-1 font-display text-lg font-bold text-on-surface">Resumen cotizado</h4>
 
-          <div className="space-y-4 rounded-lg border border-border bg-surface-container-lowest p-5 shadow-sm">
-            <h4 className="font-display text-lg font-bold text-on-surface">Detalle solicitado</h4>
-
-            <div className="space-y-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Menú solicitado</p>
-              {menuItems.length > 0 ? (
-                menuItems.map((item) => (
-                  <div key={item.id} className="text-sm">
-                    <p className="font-semibold text-on-surface">{item.concept}</p>
-                    <p className="text-xs text-on-surface-variant">
-                      {item.quantity} pax - {formatCurrency(item.unitAdjustedPrice)} c/u
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-on-surface-variant">No hay items de menú</p>
-              )}
-            </div>
-
-            <div className="space-y-2 border-t border-outline-variant/20 pt-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Montaje y adicionales</p>
-              {montageItems.length > 0 ? (
-                montageItems.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between gap-3 text-sm">
-                    <p className="font-semibold text-on-surface">{item.concept}</p>
-                    <p className="text-xs text-on-surface-variant">
-                      {item.pricingMode === 'unidad' ? `x${item.quantity}` : '1 servicio'}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-on-surface-variant">No hay items de montaje</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-4 rounded-lg border border-border bg-surface-container-lowest p-5 shadow-sm">
-            <h4 className="font-display text-lg font-bold text-on-surface">Versión actual</h4>
-            <div className="flex items-center justify-between gap-3">
+            <div className="mt-4 space-y-4">
               <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-on-surface">{formatShortId(cotizacion.id, 'COT-')}</p>
-                  <span className="text-[10px] font-bold text-gold">Vigente</span>
+                <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Menu</p>
+                <div className="mt-2 space-y-2">
+                  {menuItems.length > 0 ? (
+                    menuItems.map((item) => (
+                      <div key={item.id} className="rounded-xl border border-stone-200 bg-white px-3 py-2">
+                        <p className="text-sm font-bold text-on-surface">{item.concept}</p>
+                        <p className="text-xs text-on-surface-variant">
+                          {item.quantity} pax - {formatCurrency(item.unitAdjustedPrice)} c/u
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-on-surface-variant">Sin items de menu.</p>
+                  )}
                 </div>
-                <p className="text-xs text-on-surface-variant">{new Date().toLocaleDateString('es-CO')}</p>
               </div>
-              <StatusBadge type="quote" status={quoteStatus} />
+
+              <div className="border-t border-outline-variant/20 pt-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Montaje</p>
+                <div className="mt-2 space-y-2">
+                  {montageItems.length > 0 ? (
+                    montageItems.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white px-3 py-2">
+                        <p className="text-sm font-bold text-on-surface">{item.concept}</p>
+                        <p className="text-xs text-on-surface-variant">
+                          {item.pricingMode === 'unidad' ? `x${item.quantity}` : '1 servicio'}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-on-surface-variant">Sin items de montaje.</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -742,35 +746,35 @@ const EventQuotePage: React.FC = () => {
       </div>
 
       <footer className="fixed bottom-0 right-0 z-[60] flex w-full items-center justify-between border-t border-surface-container bg-surface-container-lowest/90 px-6 py-4 backdrop-blur-md md:w-[calc(100%-16rem)]">
-        <div className="hidden items-center gap-2 text-on-secondary-container sm:flex">
-          <span className="material-symbols-outlined text-lg">info</span>
+        <div className="hidden items-center gap-2 text-on-secondary-container lg:flex">
+          <span className="material-symbols-outlined text-lg text-[#A8841C]">request_quote</span>
           <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
-            Los precios se negocian aqui; cantidades y adicionales se corrigen en Menu o Montaje
+            Ajusta precios, genera documento y envia la version al cliente
           </p>
         </div>
-        <div className="flex w-full gap-3 sm:w-auto">
+        <div className="flex w-full flex-wrap justify-end gap-3 lg:w-auto">
           {isDraft ? (
             <button
-              className="flex-1 rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+              className="rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
               type="button"
               onClick={handleGenerarCotizacion}
               disabled={isReadOnly || saving}
             >
-              Generar cotización
+              Generar cotizacion
             </button>
           ) : (
             <button
-              className="flex-1 rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+              className="rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
               type="button"
               onClick={handleGenerarNuevaVersion}
               disabled={isReadOnly || saving || !reservaRaizId}
             >
-              Crear nueva version
+              Nueva version
             </button>
           )}
 
           <button
-            className="flex-1 rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+            className="rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             onClick={handleDescargarDocumento}
             disabled={saving || cotizacion.estado === 'BORRADOR'}
@@ -779,7 +783,7 @@ const EventQuotePage: React.FC = () => {
           </button>
 
           <button
-            className="flex-1 rounded-md border border-green-text/40 px-5 py-2.5 text-sm font-semibold text-green-text transition-colors hover:bg-green-bg disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+            className="rounded-md border border-green-text/40 px-5 py-2.5 text-sm font-semibold text-green-text transition-colors hover:bg-green-bg disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             onClick={handleEnviarCotizacion}
             disabled={isReadOnly || saving || cotizacion.estado !== 'GENERADA'}
@@ -788,7 +792,7 @@ const EventQuotePage: React.FC = () => {
           </button>
 
           <button
-            className="flex-1 rounded-md border border-blue-300 px-5 py-2.5 text-sm font-semibold text-blue-800 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+            className="rounded-md border border-blue-300 px-5 py-2.5 text-sm font-semibold text-blue-800 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             onClick={handleEnviarEmail}
             disabled={isReadOnly || saving || !['GENERADA', 'ENVIADA', 'ACEPTADA'].includes(cotizacion.estado)}
@@ -797,14 +801,13 @@ const EventQuotePage: React.FC = () => {
           </button>
 
           <button
-            className="flex-1 rounded-md bg-primary-gold px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+            className="rounded-md bg-[#A8841C] px-5 py-2.5 text-sm font-black text-white transition-colors hover:bg-[#8d6f15] disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             onClick={handleAceptarCotizacion}
             disabled={isReadOnly || saving || !['GENERADA', 'ENVIADA'].includes(cotizacion.estado)}
           >
             Aceptar
           </button>
-
         </div>
       </footer>
     </section>

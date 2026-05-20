@@ -8,16 +8,18 @@ interface QuotesTableProps {
 
 const QuotesTable: React.FC<QuotesTableProps> = ({ quotes }) => {
   return (
-    <table className="w-full text-left border-collapse">
+    <table className="w-full min-w-[1060px] border-collapse text-left">
       <thead>
-        <tr className="bg-stone-50/70 border-b border-border">
-          <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">ID</th>
-          <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Evento</th>
-          <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Cliente</th>
-          <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Creación</th>
-          <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Valor total</th>
-          <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3">Estado</th>
-          <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-text3 text-right">Acciones</th>
+        <tr className="border-b border-border bg-[#f8f3e8]">
+          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-text3">ID</th>
+          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-text3">Evento</th>
+          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-text3">Cliente</th>
+          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-text3">Version</th>
+          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-text3">Valor total</th>
+          <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-text3">Estado</th>
+          <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-widest text-text3">
+            Acciones
+          </th>
         </tr>
       </thead>
 

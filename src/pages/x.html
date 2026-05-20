@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotización UI Profesional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6 text-gray-800">
+
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
+        
+        <div class="flex-1 flex flex-col gap-6">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex justify-between items-start">
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Cotización Activa</p>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">COT-881DE6BA</h1>
+                    <p class="text-sm text-gray-500">Capacitacion - paola C – Inicio: 30 de junio de 2026 a las 12:35 p. m.</p>
+                </div>
+                <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
+                    Borrador
+                </span>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1">Origen de los datos</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">Esta cotización se genera desde Menú y Montaje. Para cambiar platos, cantidades o adicionales, edita esas pestañas; aquí solo se revisan precios, anticipo y acciones de la versión.</p>
+                </div>
+                <div class="flex gap-3 whitespace-nowrap">
+                    <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Ir a Menú</button>
+                    <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Ir a Montaje</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Detalle económico</h3>
+                    <p class="text-sm text-gray-500">Las cantidades son de solo lectura. Los precios solo se ajustan mientras la cotización esté en estado BORRADOR, GENERADA o ENVIADA.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-semibold border-b border-gray-200">Concepto</th>
+                                <th class="p-4 font-semibold border-b border-gray-200 text-center">Origen</th>
+                                <th class="p-4 font-semibold border-b border-gray-200">Cobro</th>
+                                <th class="p-4 font-semibold border-b border-gray-200 text-right">Cantidad</th>
+                                <th class="p-4 font-semibold border-b border-gray-200 text-right">Precio Base</th>
+                                <th class="p-4 font-semibold border-b border-gray-200 text-right">Precio Ajustado</th>
+                                <th class="p-4 font-semibold border-b border-gray-200 text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="p-4 font-medium text-gray-900">Chiscake</td>
+                                <td class="p-4 text-center"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">Menú</span></td>
+                                <td class="p-4 text-gray-600">Por unidad</td>
+                                <td class="p-4 text-right font-medium text-gray-900">10 pax</td>
+                                <td class="p-4 text-right text-gray-600">$ 15.000</td>
+                                <td class="p-4 text-right">
+                                    <input type="text" value="12000" class="w-24 text-right border border-gray-300 rounded-md px-2 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow text-gray-900">
+                                </td>
+                                <td class="p-4 text-right font-semibold text-gray-900">$ 120.000</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="p-4 font-medium text-gray-900">Sonido basico</td>
+                                <td class="p-4 text-center"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">Montaje</span></td>
+                                <td class="p-4 text-gray-600">Por servicio</td>
+                                <td class="p-4 text-right font-medium text-gray-900">1 servicio</td>
+                                <td class="p-4 text-right text-gray-600">$ 150.000</td>
+                                <td class="p-4 text-right">
+                                    <input type="text" value="150000" class="w-24 text-right border border-gray-300 rounded-md px-2 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow text-gray-900">
+                                </td>
+                                <td class="p-4 text-right font-semibold text-gray-900">$ 150.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Condiciones de pago</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Anticipo (%)</label>
+                        <input type="number" value="20" class="w-full border border-gray-300 bg-gray-50 rounded-md px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all">
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">Anticipo requerido</p>
+                        <p class="text-xl font-bold text-emerald-600">$ 54.000</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">Saldo restante</p>
+                        <p class="text-xl font-bold text-gray-900">$ 216.000</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="w-full lg:w-80 flex flex-col gap-6">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-base font-semibold text-gray-900 mb-4 pb-4 border-b border-gray-100">Resumen financiero</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Total base</span>
+                        <span class="font-medium text-gray-900">$ 270.000</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Total ajustado</span>
+                        <span class="font-medium text-gray-900">$ 270.000</span>
+                    </div>
+                    <div class="flex justify-between pt-2 border-t border-gray-100">
+                        <span class="font-medium text-gray-700">Ajuste neto</span>
+                        <span class="font-medium text-amber-600">+$ 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-base font-semibold text-gray-900 mb-4">Detalle solicitado</h3>
+                
+                <div class="mb-4">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menú Solicitado</p>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">Chiscake</p>
+                            <p class="text-xs text-gray-500 mt-0.5">10 pax - $ 12.000 c/u</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Montaje y Adicionales</p>
+                    <div class="flex justify-between items-start">
+                        <p class="text-sm font-medium text-gray-900">Sonido basico</p>
+                        <span class="text-xs text-gray-500">1 servicio</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-base font-semibold text-gray-900">Historial</h3>
+                    <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded-full">5</span>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="p-4 bg-blue-50/50 border border-blue-100 rounded-lg">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm text-gray-900">Versión 5</span>
+                                    <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Vigente</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">COT-881DE6BA</p>
+                            </div>
+                            <span class="px-2 py-1 bg-white border border-gray-200 text-gray-600 text-[10px] font-medium rounded-md">Borrador</span>
+                        </div>
+                        <div class="flex justify-between items-end mt-3">
+                            <span class="text-sm font-bold text-gray-900">$ 270.000</span>
+                            <a href="#" class="text-xs font-medium text-blue-600 hover:text-blue-800">Ver</a>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border border-gray-100 rounded-lg hover:border-gray-200 transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="font-semibold text-sm text-gray-700">Versión 4</span>
+                                <p class="text-xs text-gray-500 mt-1">COT-14D08253</p>
+                            </div>
+                            <span class="text-[10px] font-bold text-orange-600 uppercase tracking-wider bg-orange-50 px-2 py-1 rounded-md">Desactualizada</span>
+                        </div>
+                        <div class="flex justify-between items-end mt-3">
+                            <span class="text-sm font-medium text-gray-700">$ 770.000</span>
+                            <a href="#" class="text-xs font-medium text-blue-600 hover:text-blue-800">Ver</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

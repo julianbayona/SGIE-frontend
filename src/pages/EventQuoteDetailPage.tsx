@@ -38,8 +38,8 @@ const formatCurrency = (value: number): string =>
   }).format(value);
 
 const sourceLabel = (tipoConcepto: string): string => {
-  if (tipoConcepto.includes('SALON') || tipoConcepto.includes('ALQUILER')) return 'Salón';
-  if (tipoConcepto.includes('MENU') || tipoConcepto.includes('PLATO')) return 'Menú';
+  if (tipoConcepto.includes('SALON') || tipoConcepto.includes('ALQUILER')) return 'Salon';
+  if (tipoConcepto.includes('MENU') || tipoConcepto.includes('PLATO')) return 'Menu';
   return 'Montaje';
 };
 
@@ -96,7 +96,7 @@ const EventQuoteDetailPage: React.FC = () => {
         setSalon(salonData);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Error al cargar el detalle de la cotización.');
+          setError(err instanceof Error ? err.message : 'Error al cargar el detalle de la cotizacion.');
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -124,12 +124,15 @@ const EventQuoteDetailPage: React.FC = () => {
   const subtotal = Number(cotizacion?.valorSubtotal ?? 0);
   const discount = Number(cotizacion?.descuento ?? 0);
   const total = Number(cotizacion?.valorTotal ?? 0);
+  const ajuste = total - subtotal;
+  const menuItems = cotizacion?.items.filter((item) => sourceLabel(item.tipoConcepto) === 'Menu') ?? [];
+  const montajeItems = cotizacion?.items.filter((item) => sourceLabel(item.tipoConcepto) === 'Montaje') ?? [];
 
   if (loading) {
     return (
       <section className="space-y-8 pb-16">
         <div className="flex items-center justify-center py-16 text-on-surface-variant">
-          Cargando detalle de cotización...
+          Cargando detalle de cotizacion...
         </div>
       </section>
     );
@@ -139,7 +142,7 @@ const EventQuoteDetailPage: React.FC = () => {
     return (
       <section className="space-y-8 pb-16">
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error ?? 'Cotización no encontrada.'}
+          {error ?? 'Cotizacion no encontrada.'}
         </div>
       </section>
     );
@@ -151,9 +154,11 @@ const EventQuoteDetailPage: React.FC = () => {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Detalle histórico</p>
-          <h2 className="mt-1 font-display text-2xl font-bold text-on-surface">
-            Cotización {formatShortId(cotizacion.id, 'COT-')}
+          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A8841C]">
+            {cotizacion.vigente ? 'Version vigente' : 'Version historica'}
+          </p>
+          <h2 className="mt-1 font-display text-3xl font-bold text-on-surface">
+            Cotizacion {formatShortId(cotizacion.id, 'COT-')}
           </h2>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -161,47 +166,80 @@ const EventQuoteDetailPage: React.FC = () => {
             to={`/events/${eventId}/cotizacion`}
             className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:border-[#A8841C] hover:text-[#A8841C]"
           >
-            Volver a cotización del evento
+            Volver al evento
           </Link>
           <Link
             to="/quotes"
             className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-700 transition-colors hover:border-[#A8841C] hover:text-[#A8841C]"
           >
-            Ver todas
+            Todas las cotizaciones
           </Link>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-6">
-          <div className="rounded-lg border border-border bg-surface-container-lowest p-6 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                  {cotizacion.vigente ? 'Versión vigente' : 'Versión histórica'}
-                </p>
-                <h3 className="mt-1 font-display text-xl font-bold text-on-surface">
-                  {formatShortId(cotizacion.id, 'COT-')}
-                </h3>
-                <p className="mt-1 text-sm text-on-surface-variant">
-                  Reserva asociada {formatShortId(cotizacion.reservaId, 'RES-')}
+          <div className="overflow-hidden rounded-2xl border border-[#A8841C]/25 bg-surface-container-lowest shadow-sm">
+            <div className="border-b border-[#A8841C]/15 bg-gradient-to-r from-[#fffaf0] to-white px-6 py-5">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h3 className="font-display text-2xl font-bold text-on-surface">
+                      {formatShortId(cotizacion.id, 'COT-')}
+                    </h3>
+                    <StatusBadge type="quote" status={estadoMap[cotizacion.estado]} size="md" />
+                    {cotizacion.vigente ? (
+                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black uppercase tracking-wider text-emerald-700">
+                        Vigente
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-2 text-sm text-on-surface-variant">
+                    Reserva asociada {formatShortId(cotizacion.reservaId, 'RES-')} - lectura historica de items y
+                    valores.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-[#A8841C]/20 bg-white px-5 py-4 text-right shadow-sm">
+                  <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Total cotizado</p>
+                  <p className="mt-1 font-display text-3xl font-bold text-on-surface">{formatCurrency(total)}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-0 md:grid-cols-4">
+              <div className="border-b border-outline-variant/20 px-6 py-4 md:border-b-0 md:border-r">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Subtotal</p>
+                <p className="mt-1 font-display text-lg font-bold text-on-surface">{formatCurrency(subtotal)}</p>
+              </div>
+              <div className="border-b border-outline-variant/20 px-6 py-4 md:border-b-0 md:border-r">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Descuento</p>
+                <p className="mt-1 font-display text-lg font-bold text-on-surface">{formatCurrency(discount)}</p>
+              </div>
+              <div className="border-b border-outline-variant/20 px-6 py-4 md:border-b-0 md:border-r">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Ajuste</p>
+                <p className={`mt-1 font-display text-lg font-bold ${ajuste >= 0 ? 'text-[#A8841C]' : 'text-green-text'}`}>
+                  {ajuste >= 0 ? '+' : '-'}
+                  {formatCurrency(Math.abs(ajuste))}
                 </p>
               </div>
-              <StatusBadge type="quote" status={estadoMap[cotizacion.estado]} size="md" />
+              <div className="px-6 py-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Items</p>
+                <p className="mt-1 font-display text-lg font-bold text-on-surface">
+                  {cotizacion.items.length} item{cotizacion.items.length === 1 ? '' : 's'}
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-lg border border-border bg-surface-container-lowest shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-border bg-surface-container-lowest shadow-sm">
             <div className="border-b border-outline-variant/20 px-6 py-4">
-              <h3 className="font-display text-lg font-bold text-on-surface">Contenido de la cotización</h3>
-              <p className="mt-1 text-sm text-on-surface-variant">
-                Este detalle corresponde exactamente a la versión seleccionada.
-              </p>
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#A8841C]">Documento</p>
+              <h3 className="mt-1 font-display text-xl font-bold text-on-surface">Contenido de la cotizacion</h3>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[820px] text-left">
-                <thead className="bg-surface-container-low text-xs uppercase tracking-wider text-neutral-500">
+              <table className="w-full min-w-[860px] text-left">
+                <thead className="bg-[#f6f1e5] text-xs uppercase tracking-wider text-stone-600">
                   <tr>
                     <th className="px-6 py-3">Concepto</th>
                     <th className="px-4 py-3">Origen</th>
@@ -218,7 +256,7 @@ const EventQuoteDetailPage: React.FC = () => {
                     const charge = chargeLabel(item.tipoConcepto, item.cantidad);
 
                     return (
-                      <tr key={item.id}>
+                      <tr key={item.id} className="transition-colors hover:bg-[#fffbf1]">
                         <td className="px-6 py-4 font-semibold text-on-surface">{item.descripcion}</td>
                         <td className="px-4 py-4">
                           <span className="rounded-full bg-surface-container-low px-2.5 py-1 text-xs font-bold text-on-surface-variant">
@@ -247,35 +285,41 @@ const EventQuoteDetailPage: React.FC = () => {
           </div>
         </div>
 
-        <aside className="space-y-4">
-          <div className="rounded-lg border border-border bg-surface-container-lowest p-5 shadow-sm">
-            <h3 className="font-display text-lg font-bold text-on-surface">Resumen financiero</h3>
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="flex justify-between gap-3">
-                <span className="text-on-surface-variant">Subtotal</span>
-                <span className="font-semibold text-on-surface">{formatCurrency(subtotal)}</span>
+        <aside className="space-y-6 xl:sticky xl:top-[92px]">
+          <div className="rounded-2xl border border-border bg-surface-container-lowest p-5 shadow-sm">
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#A8841C]">Resumen</p>
+            <h3 className="mt-1 font-display text-lg font-bold text-on-surface">Lectura rapida</h3>
+
+            <div className="mt-4 space-y-4">
+              <div className="rounded-xl border border-stone-200 bg-white px-3 py-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Menu</p>
+                <p className="mt-1 text-sm font-bold text-on-surface">
+                  {menuItems.length} item{menuItems.length === 1 ? '' : 's'}
+                </p>
               </div>
-              <div className="flex justify-between gap-3">
-                <span className="text-on-surface-variant">Descuento</span>
-                <span className="font-semibold text-on-surface">{formatCurrency(discount)}</span>
+              <div className="rounded-xl border border-stone-200 bg-white px-3 py-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Montaje</p>
+                <p className="mt-1 text-sm font-bold text-on-surface">
+                  {montajeItems.length} item{montajeItems.length === 1 ? '' : 's'}
+                </p>
               </div>
-              <div className="flex justify-between gap-3 border-t border-outline-variant/20 pt-3">
-                <span className="font-bold text-on-surface">Total</span>
-                <span className="font-display text-lg font-bold text-on-surface">{formatCurrency(total)}</span>
+              <div className="rounded-xl border border-stone-200 bg-white px-3 py-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Observaciones</p>
+                <p className="mt-1 text-sm text-on-surface-variant">
+                  {cotizacion.observaciones?.trim() || 'Sin observaciones registradas.'}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-surface-container-lowest p-5 shadow-sm">
-            <h3 className="font-display text-lg font-bold text-on-surface">Observaciones</h3>
-            <p className="mt-3 text-sm text-on-surface-variant">
-              {cotizacion.observaciones?.trim() || 'Sin observaciones registradas para esta versión.'}
-            </p>
-          </div>
+          <QuoteHistoryPanel
+            eventId={eventId ?? ''}
+            quotes={historial}
+            selectedQuoteId={cotizacion.id}
+            variant="compact"
+          />
         </aside>
       </div>
-
-      <QuoteHistoryPanel eventId={eventId ?? ''} quotes={historial} selectedQuoteId={cotizacion.id} />
     </section>
   );
 };

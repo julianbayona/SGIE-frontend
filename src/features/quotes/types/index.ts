@@ -1,6 +1,5 @@
 export type QuoteStatus = 'Borrador' | 'Generada' | 'Enviada' | 'Aceptada' | 'Rechazada' | 'Desactualizada';
 export type QuoteCustomerType = 'Socio' | 'No Socio';
-export type QuotesTab = 'Recientes' | 'Pendientes' | 'Aprobadas';
 
 export interface QuoteRecord {
   id: string;
@@ -8,9 +7,12 @@ export interface QuoteRecord {
   sortDate: string;
   eventName: string;
   eventMeta: string;
+  eventDateLabel: string;
   customerName: string;
   customerType: QuoteCustomerType;
   createdAt: string;
+  isCurrent: boolean;
+  rawTotalValue: number;
   totalValue: string;
   status: QuoteStatus;
 }
