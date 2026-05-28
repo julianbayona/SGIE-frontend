@@ -11,6 +11,7 @@ import salonesApi from '@/api/salones';
 import type { CatalogoBasicoResponse, ClienteResponse, SalonResponse } from '@/api/types';
 import ClientFormModal, { type ClientFormValues } from '@/features/clients/components/ClientFormModal';
 import { FORM_LIMITS, limitText, numberInputValue, onlyDigits, selectInputText } from '@/utils/formLimits';
+import { capitalizeText } from '@/utils/formatters';
 
 const labelClass = 'text-[0.68rem] font-black uppercase tracking-[0.22em] text-stone-500';
 const inputClass =
@@ -61,6 +62,10 @@ function EventRequestPage() {
   const [customerQuery, setCustomerQuery] = useState('');
   const [selectedVenueId, setSelectedVenueId] = useState('');
   const [salones, setSalones] = useState<SalonResponse[]>([]);
+  const [allSalones, setAllSalones] = useState<SalonResponse[]>([]);
+  const [availabilityChecked, setAvailabilityChecked] = useState(false);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [availabilityMessage, setAvailabilityMessage] = useState<string | null>(null);
   const [tiposEvento, setTiposEvento] = useState<CatalogoBasicoResponse[]>([]);
   const [tiposComida, setTiposComida] = useState<CatalogoBasicoResponse[]>([]);
   const [clienteEncontrado, setClienteEncontrado] = useState<ClienteResponse | null>(null);
@@ -86,6 +91,7 @@ function EventRequestPage() {
         const salonesActivos = salonesPage.filter((salon) => salon.activo);
         const eventosActivos = tiposEventoData.filter((tipo) => tipo.activo);
         const comidasActivas = tiposComidaData.filter((tipo) => tipo.activo);
+        setAllSalones(salonesActivos);
         setSalones(salonesActivos);
         setTiposEvento(eventosActivos);
         setTiposComida(comidasActivas);
@@ -95,6 +101,16 @@ function EventRequestPage() {
       })
       .catch(() => setError('No fue posible cargar los catalogos iniciales.'));
   }, []);
+
+  useEffect(() => {
+    setAvailabilityChecked(false);
+    setAvailabilityMessage(null);
+    setSalones(allSalones);
+
+    if (selectedVenueId && !allSalones.some((salon) => salon.id === selectedVenueId)) {
+      setSelectedVenueId('');
+    }
+  }, [allSalones, fechaHoraInicio, fechaHoraFin, numPersonas]);
 
   useEffect(() => {
     const query = customerQuery.trim();
@@ -127,6 +143,16 @@ function EventRequestPage() {
     };
   }, [customerQuery]);
 
+  useEffect(() => {
+    if (!fechaHoraInicio) return;
+
+    setFechaHoraFin((current) => {
+      const startDate = fechaHoraInicio.slice(0, 10);
+      if (!current) return fechaHoraInicio;
+      return `${startDate}T${current.slice(11, 16)}`;
+    });
+  }, [fechaHoraInicio]);
+
   const selectedVenue = useMemo(
     () => salones.find((salon) => salon.id === selectedVenueId),
     [salones, selectedVenueId],
@@ -147,9 +173,24 @@ function EventRequestPage() {
   );
   const invitados = Number(numPersonas);
   const hasValidGuestCount = Number.isInteger(invitados) && invitados > 0;
+  const unavailableByCapacityCount = useMemo(
+    () => (hasValidGuestCount ? allSalones.filter((salon) => salon.capacidad < invitados).length : 0),
+    [allSalones, hasValidGuestCount, invitados],
+  );
+  const missingFields = [
+    !clienteEncontrado ? 'cliente' : '',
+    !hasValidDates ? 'horario valido' : '',
+    !hasValidGuestCount ? 'invitados' : '',
+    !tipoEventoId ? 'tipo de evento' : '',
+    !tipoComidaId ? 'tipo de comida' : '',
+    !selectedVenueId ? 'salon' : '',
+  ].filter(Boolean);
   const canCreate = Boolean(
     clienteEncontrado && selectedVenueId && tipoEventoId && tipoComidaId && hasValidDates && hasValidGuestCount,
   );
+  const createHelpText = canCreate
+    ? 'Todo listo para crear la solicitud.'
+    : `Para continuar falta: ${missingFields.join(', ')}.`;
   const durationLabel = getDurationLabel(fechaHoraInicio, fechaHoraFin);
   const customerSearchText = customerQuery.trim();
   const canSearchCliente = customerSearchText.length >= 3;
@@ -168,17 +209,39 @@ function EventRequestPage() {
 
     try {
       setError(null);
+      setCheckingAvailability(true);
+      setAvailabilityMessage(null);
       const disponibles = await salonesApi.consultarDisponibilidad({
         fechaHoraInicio: toLocalDateTime(fechaHoraInicio),
         fechaHoraFin: toLocalDateTime(fechaHoraFin),
         capacidadMinima: invitados,
       });
-      setSalones(disponibles.filter((salon) => salon.activo));
-      if (selectedVenueId && !disponibles.some((salon) => salon.id === selectedVenueId)) {
+
+      const disponiblesActivos = disponibles.filter((salon) => salon.activo);
+      setAvailabilityChecked(true);
+      setSalones(disponiblesActivos);
+
+      if (disponiblesActivos.length === 0) {
         setSelectedVenueId('');
+        setAvailabilityMessage('No hay salones disponibles para ese horario y numero de invitados.');
+        toast.info('Sin disponibilidad', 'Prueba otro horario, reduce invitados o revisa salones de mayor capacidad.');
+        return;
       }
-    } catch {
-      setError('No fue posible consultar disponibilidad de salones.');
+
+      if (!selectedVenueId || !disponiblesActivos.some((salon) => salon.id === selectedVenueId)) {
+        const firstAvailable = disponiblesActivos[0];
+        if (firstAvailable) {
+          setSelectedVenueId(firstAvailable.id);
+        }
+      }
+      setAvailabilityMessage(`${disponiblesActivos.length} salon(es) disponible(s) para el horario consultado.`);
+      toast.success('Disponibilidad consultada', `${disponiblesActivos.length} salon(es) cumplen con horario y capacidad.`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No fue posible consultar disponibilidad de salones.';
+      setError(message);
+      toast.error('No fue posible consultar disponibilidad', message);
+    } finally {
+      setCheckingAvailability(false);
     }
   };
 
@@ -238,7 +301,7 @@ function EventRequestPage() {
       setClienteResultados([]);
       setIsClienteFormOpen(false);
       setClienteFormError(null);
-      toast.success('Cliente registrado', `${nuevoCliente.nombreCompleto} quedo seleccionado para la solicitud.`);
+      toast.success('Cliente registrado', `${capitalizeText(nuevoCliente.nombreCompleto)} quedo seleccionado para la solicitud.`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No fue posible registrar el cliente.';
       setClienteFormError(message);
@@ -377,7 +440,7 @@ function EventRequestPage() {
                         >
                           <span>
                             <span className="block text-sm font-black text-stone-900">
-                              {cliente.nombreCompleto}
+                            {capitalizeText(cliente.nombreCompleto)}
                             </span>
                             <span className="text-xs text-stone-500">
                               {cliente.cedula} · {cliente.telefono}
@@ -399,7 +462,7 @@ function EventRequestPage() {
                         Cliente seleccionado
                       </p>
                       <div>
-                        <p className="font-serif text-2xl font-black">{clienteEncontrado.nombreCompleto}</p>
+                        <p className="font-serif text-2xl font-black">{capitalizeText(clienteEncontrado.nombreCompleto)}</p>
                         <p className="mt-2 text-sm font-semibold text-stone-600">{clienteEncontrado.telefono}</p>
                         <p className="text-sm font-semibold text-stone-600">{clienteEncontrado.correo || 'Sin correo'}</p>
                       </div>
@@ -495,7 +558,7 @@ function EventRequestPage() {
                     <option value="">Seleccionar tipo</option>
                     {tiposEvento.map((tipo) => (
                       <option key={tipo.id} value={tipo.id}>
-                        {tipo.nombre}
+                        {capitalizeText(tipo.nombre)}
                       </option>
                     ))}
                   </select>
@@ -510,7 +573,7 @@ function EventRequestPage() {
                     <option value="">Seleccionar tipo</option>
                     {tiposComida.map((tipo) => (
                       <option key={tipo.id} value={tipo.id}>
-                        {tipo.nombre}
+                        {capitalizeText(tipo.nombre)}
                       </option>
                     ))}
                   </select>
@@ -527,13 +590,52 @@ function EventRequestPage() {
                     Consulta disponibilidad y elige el espacio principal del evento.
                   </p>
                 </div>
-                <Button type="button" variant="secondary" onClick={consultarDisponibilidad}>
-                  Consultar disponibilidad
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={consultarDisponibilidad}
+                  disabled={checkingAvailability || !hasValidDates || !hasValidGuestCount}
+                  title={
+                    !hasValidDates
+                      ? 'Define un horario valido para consultar disponibilidad.'
+                      : !hasValidGuestCount
+                        ? 'Define el numero de invitados para consultar disponibilidad.'
+                        : 'Filtrar salones por horario, capacidad y reservas confirmadas.'
+                  }
+                >
+                  {checkingAvailability ? 'Consultando...' : 'Consultar disponibilidad'}
                 </Button>
               </div>
 
-              <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
-                {salones.map((salon) => {
+              <div className="space-y-4 p-6">
+                <div className="rounded-2xl border border-[#A8841C]/20 bg-[#fbf8f1] px-4 py-3 text-sm font-semibold text-stone-700">
+                  {availabilityChecked ? (
+                    <span>
+                      {availabilityMessage}
+                      {unavailableByCapacityCount > 0
+                        ? ` ${unavailableByCapacityCount} salon(es) no cumplen la capacidad solicitada.`
+                        : ''}
+                    </span>
+                  ) : (
+                    <span>
+                      Se muestran todos los salones activos. Consulta disponibilidad para filtrar por horario,
+                      capacidad y reservas confirmadas del club.
+                    </span>
+                  )}
+                </div>
+
+                {availabilityChecked && salones.length === 0 ? (
+                  <div className="rounded-3xl border border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center">
+                    <p className="font-serif text-2xl font-black text-stone-950">Sin salones disponibles</p>
+                    <p className="mx-auto mt-2 max-w-xl text-sm font-semibold leading-6 text-stone-600">
+                      No hay salones activos que cumplan el horario y la capacidad solicitada. Cambia el rango de
+                      fechas, ajusta el numero de invitados o revisa otro espacio del club.
+                    </p>
+                  </div>
+                ) : null}
+
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {salones.map((salon) => {
                   const selected = selectedVenueId === salon.id;
                   return (
                     <button
@@ -548,7 +650,7 @@ function EventRequestPage() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="font-serif text-xl font-black text-stone-950">{salon.nombre}</p>
+                          <p className="font-serif text-xl font-black text-stone-950">{capitalizeText(salon.nombre)}</p>
                           <p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-500">
                             {salon.descripcion || 'Sin descripcion registrada.'}
                           </p>
@@ -566,7 +668,8 @@ function EventRequestPage() {
                       </div>
                     </button>
                   );
-                })}
+                  })}
+                </div>
               </div>
             </Card>
           </main>
@@ -586,15 +689,15 @@ function EventRequestPage() {
               <div className="space-y-4 p-6">
                 <SummaryItem
                   label="Cliente"
-                  value={clienteEncontrado?.nombreCompleto || 'Pendiente'}
+                  value={capitalizeText(clienteEncontrado?.nombreCompleto) || 'Pendiente'}
                   muted={!clienteEncontrado}
                 />
                 <SummaryItem label="Inicio" value={formatDateTime(fechaHoraInicio)} muted={!fechaHoraInicio} />
                 <SummaryItem label="Fin" value={formatDateTime(fechaHoraFin)} muted={!fechaHoraFin} />
                 <SummaryItem label="Duracion" value={durationLabel} muted={!hasValidDates} />
-                <SummaryItem label="Tipo de evento" value={selectedTipoEvento?.nombre || 'Pendiente'} muted={!selectedTipoEvento} />
-                <SummaryItem label="Tipo de comida" value={selectedTipoComida?.nombre || 'Pendiente'} muted={!selectedTipoComida} />
-                <SummaryItem label="Salon" value={selectedVenue?.nombre || 'Pendiente'} muted={!selectedVenue} />
+                <SummaryItem label="Tipo de evento" value={capitalizeText(selectedTipoEvento?.nombre) || 'Pendiente'} muted={!selectedTipoEvento} />
+                <SummaryItem label="Tipo de comida" value={capitalizeText(selectedTipoComida?.nombre) || 'Pendiente'} muted={!selectedTipoComida} />
+                <SummaryItem label="Salon" value={capitalizeText(selectedVenue?.nombre) || 'Pendiente'} muted={!selectedVenue} />
 
                 <div className="rounded-3xl border border-stone-300 bg-[#f4ead8] p-4">
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-[#A8841C]">
@@ -613,15 +716,18 @@ function EventRequestPage() {
       <div className="sticky bottom-0 z-20 border-t border-stone-200 bg-white/90 px-6 py-4 shadow-2xl shadow-stone-900/10 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold text-stone-500">
-            {canCreate
-              ? 'Todo listo para crear la solicitud.'
-              : 'Completa cliente, horario, invitados, tipo de evento, tipo de comida y salon.'}
+            {createHelpText}
           </p>
           <div className="flex justify-end gap-3">
             <Button type="button" variant="ghost" onClick={() => navigate('/events')}>
               Salir
             </Button>
-            <Button type="button" onClick={handleCrearEvento} disabled={saving || !canCreate}>
+            <Button
+              type="button"
+              onClick={handleCrearEvento}
+              disabled={saving || !canCreate}
+              title={canCreate ? 'Crear evento y avanzar a menu' : createHelpText}
+            >
               {saving ? 'Creando...' : 'Crear evento y continuar'}
             </Button>
           </div>

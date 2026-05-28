@@ -240,13 +240,27 @@ const EventPaymentsPage: React.FC = () => {
     () => payments.reduce((sum, payment) => sum + payment.amount, 0),
     [payments]
   );
-  const pendingAmount = Math.max(totalEventAmount - paidAmount, 0);
+  const rawPendingAmount = totalEventAmount - paidAmount;
+  const pendingAmount = Math.max(rawPendingAmount, 0);
+  const overpaidAmount = Math.max(paidAmount - totalEventAmount, 0);
+  const hasOverpayment = overpaidAmount > 0;
   const paidProgress = totalEventAmount > 0 ? Math.min((paidAmount / totalEventAmount) * 100, 100) : 0;
-  const paymentStatusLabel = pendingAmount > 0 ? 'Saldo pendiente' : 'Pagado totalmente';
+  const paymentStatusLabel = hasOverpayment ? 'Sobrepago detectado' : pendingAmount > 0 ? 'Saldo pendiente' : 'Pagado totalmente';
   const paymentHistory = useMemo(() => [...payments].reverse(), [payments]);
   const canRegisterPayment = Boolean(
-    !isReadOnly && cotizacionId && cotizacionEstado === 'ACEPTADA' && pendingAmount > 0
+    !isReadOnly && cotizacionId && cotizacionEstado === 'ACEPTADA' && pendingAmount > 0 && !hasOverpayment
   );
+  const amountExceedsPending = newAmount > pendingAmount && pendingAmount > 0;
+  const paymentBlockReason = (() => {
+    if (hasOverpayment) {
+      return `Los pagos registrados superan el total de la cotizacion por ${formatCurrency(overpaidAmount)}. Revisa el historial antes de registrar nuevos pagos.`;
+    }
+    if (isReadOnly) return 'Los pagos quedan solo para consulta en este estado del evento.';
+    if (!cotizacionId || cotizacionEstado !== 'ACEPTADA') return paymentWarning;
+    if (pendingAmount <= 0) return 'La cotizacion ya esta pagada. No se pueden registrar mas pagos.';
+    if (amountExceedsPending) return `El valor no puede superar el saldo pendiente de ${formatCurrency(pendingAmount)}.`;
+    return null;
+  })();
 
   const registerPayment = async () => {
     if (isReadOnly) {
@@ -258,12 +272,17 @@ const EventPaymentsPage: React.FC = () => {
       return;
     }
 
-    const safeAmount = Math.min(newAmount, pendingAmount);
+    if (amountExceedsPending) {
+      const message = `El valor ingresado (${formatCurrency(newAmount)}) supera el saldo pendiente (${formatCurrency(pendingAmount)}).`;
+      setError(message);
+      toast.error('No fue posible registrar el pago', message);
+      return;
+    }
 
     try {
       setSaving(true);
       const anticipo = await pagosApi.registrarAnticipo(cotizacionId, {
-        valor: safeAmount,
+        valor: newAmount,
         metodoPago: newMethod,
         fechaPago: newDate,
         observaciones: newConcept.trim(),
@@ -293,7 +312,7 @@ const EventPaymentsPage: React.FC = () => {
       setNewAmount(0);
       setNewDate('');
       setNewMethod('TRANSFERENCIA');
-      setNewConcept(pendingAmount - safeAmount <= 0 ? 'Abono final' : 'Anticipo');
+      setNewConcept(pendingAmount - newAmount <= 0 ? 'Abono final' : 'Anticipo');
       toast.success('Pago registrado', `${formatCurrency(Number(anticipo.valor))} quedo aplicado al evento.`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al registrar el pago.';
@@ -362,7 +381,11 @@ const EventPaymentsPage: React.FC = () => {
           </div>
           <span
             className={`px-3 py-1 rounded-full text-xs font-bold ${
-              pendingAmount > 0 ? 'bg-gold-bg text-gold-d border border-gold/25' : 'bg-green-bg text-green-text border border-green-border'
+              hasOverpayment
+                ? 'border border-red-200 bg-red-50 text-red-700'
+                : pendingAmount > 0
+                  ? 'bg-gold-bg text-gold-d border border-gold/25'
+                  : 'bg-green-bg text-green-text border border-green-border'
             }`}
           >
             {paymentStatusLabel}
@@ -380,9 +403,18 @@ const EventPaymentsPage: React.FC = () => {
           </div>
           <div className="rounded-lg border border-outline-variant/30 bg-surface-container-low p-4">
             <p className="text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-2">Saldo</p>
-            <p className="text-2xl font-display font-bold text-on-surface">{formatCurrency(pendingAmount)}</p>
+            <p className={`text-2xl font-display font-bold ${hasOverpayment ? 'text-red-700' : 'text-on-surface'}`}>
+              {hasOverpayment ? `-${formatCurrency(overpaidAmount)}` : formatCurrency(pendingAmount)}
+            </p>
           </div>
         </div>
+
+        {hasOverpayment ? (
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            Los pagos registrados superan el total de la cotizacion. El sistema no ajustara valores
+            automaticamente; revisa el historial y corrige el registro desde base de datos o por el flujo administrativo definido.
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <div className="h-2.5 rounded-full bg-surface-container-low overflow-hidden">
@@ -403,6 +435,12 @@ const EventPaymentsPage: React.FC = () => {
               El valor registrado no puede superar el saldo pendiente de la cotizacion vigente.
             </p>
           </div>
+
+          {paymentBlockReason ? (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+              {paymentBlockReason}
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -467,8 +505,9 @@ const EventPaymentsPage: React.FC = () => {
           <button
             type="button"
             className="bg-primary-gold text-white px-5 py-2.5 rounded-md text-sm font-bold hover:bg-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled={saving || !canRegisterPayment || newAmount <= 0 || !newDate || !newConcept.trim()}
+            disabled={saving || !canRegisterPayment || amountExceedsPending || newAmount <= 0 || !newDate || !newConcept.trim()}
             onClick={registerPayment}
+            title={paymentBlockReason ?? undefined}
           >
             {isReadOnly ? event.status : saving ? 'Registrando...' : 'Registrar pago'}
           </button>
