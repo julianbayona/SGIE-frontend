@@ -97,7 +97,24 @@ docker cp "SGIE-CB/scripts/seed-local-full.sql" sgie-postgres:/tmp/seed-local-fu
 docker exec -i sgie-postgres psql -U postgres -d sgie -v ON_ERROR_STOP=1 -f /tmp/seed-local-full.sql
 ```
 
-## 5. Validacion realizada
+## 5. Mejora visual de notificaciones y agenda
+
+Se ajusto la pantalla de agenda/notificaciones para que la insercion de datos sea mas directa y para evitar errores confusos al programar pruebas de plato.
+
+Cambios realizados:
+
+- El formulario de `Crear notificacion o prueba de plato` ahora aparece al inicio de la pantalla, antes del monitoreo y del listado.
+- Se agrego una tarjeta de regla de fecha visible para explicar el rango valido.
+- Para pruebas de plato, el selector exige una fecha futura y anterior al inicio del evento.
+- Si la fecha seleccionada no cumple la regla, el campo se marca visualmente, se muestra el motivo y el boton queda bloqueado.
+- El boton cambia su texto segun la accion: `Programar prueba de plato` o `Crear recordatorio`.
+- El canal de prueba de plato se muestra como email y queda bloqueado, porque la programacion dispara notificacion y Calendar automaticamente.
+
+Archivo principal:
+
+- `SGIE-frontend/src/pages/EventAgendaPage.tsx`
+
+## 6. Validacion realizada
 
 Frontend:
 
@@ -116,7 +133,7 @@ Backend:
 - La semilla fue ejecutada correctamente contra el contenedor local `sgie-postgres`.
 - Se confirmo que el script es idempotente para los registros definidos.
 
-## 6. Cambios descartados
+## 7. Cambios descartados
 
 Estos cambios se probaron o avanzaron parcialmente, pero fueron descartados y no forman parte del estado vigente:
 
@@ -126,7 +143,7 @@ Estos cambios se probaron o avanzaron parcialmente, pero fueron descartados y no
 - Migracion `V12__agregar_comprobante_anticipo.sql`.
 - Cambio para evitar falso positivo de email enviado cuando SMTP esta deshabilitado.
 
-## 7. Como probar en local
+## 8. Como probar en local
 
 Backend:
 
