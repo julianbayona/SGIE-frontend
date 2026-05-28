@@ -14,3 +14,14 @@ export const formatShortId = (value?: string | null, prefix = ''): string => {
 
   return prefix ? `${prefix}${shortValue}` : shortValue;
 };
+
+export const capitalizeText = (value?: string | null): string => {
+  if (!value) return '';
+
+  return value
+    .trim()
+    .toLocaleLowerCase('es-CO')
+    .replace(/(^|[\s/-])(\p{L})/gu, (_match, separator: string, letter: string) =>
+      `${separator}${letter.toLocaleUpperCase('es-CO')}`,
+    );
+};

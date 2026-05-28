@@ -22,7 +22,7 @@ import { getEventDisplayStatus, isEventReadOnly } from '@/features/events/utils/
 import QuoteHistoryPanel from '@/features/quotes/components/QuoteHistoryPanel';
 import type { QuoteStatus } from '@/features/quotes/types';
 import { FORM_LIMITS, numberInputValue, selectInputText, toLimitedNumber } from '@/utils/formLimits';
-import { formatShortId } from '@/utils/formatters';
+import { capitalizeText, formatShortId } from '@/utils/formatters';
 
 type QuoteItemView = {
   id: string;
@@ -139,6 +139,10 @@ const EventQuotePage: React.FC = () => {
   const isReadOnly = isEventReadOnly(evento);
   const canEditPrices = cotizacion && !isReadOnly ? ['BORRADOR', 'GENERADA', 'ENVIADA'].includes(cotizacion.estado) : false;
   const quoteStatus = cotizacion ? estadoMap[cotizacion.estado] : 'Borrador';
+  const newVersionHelp =
+    'La nueva version se crea automaticamente cuando cambias menu, montaje o reserva. Para negociar precio, ajusta los items en esta pantalla.';
+  const acceptQuoteHelp =
+    'Aceptar cotizacion marca esta version como aprobada y habilita el flujo de confirmacion y pagos. Puedes hacerlo ahora o volver despues.';
 
   const adjustedTotal = Number(cotizacion?.valorTotal || 0);
   const baseTotal = Number(cotizacion?.valorSubtotal || 0);
@@ -166,7 +170,7 @@ const EventQuotePage: React.FC = () => {
 
       return {
         id: item.id,
-        concept: item.descripcion,
+        concept: capitalizeText(item.descripcion),
         source,
         pricingMode,
         quantity: item.cantidad,
@@ -219,7 +223,7 @@ const EventQuotePage: React.FC = () => {
     }
 
     setError(
-      'Para crear una nueva version cambia Menu, Montaje o la reserva. Si solo necesitas negociar precio, ajusta los items permitidos en esta pantalla.',
+      newVersionHelp,
     );
   };
 
@@ -315,13 +319,13 @@ const EventQuotePage: React.FC = () => {
     }
   };
 
-  const handleDescargarDocumento = async () => {
+  const handleDescargarDocumento = async (formato: 'xlsx' | 'pdf' = 'xlsx') => {
     if (!cotizacion) return;
 
     try {
       setSaving(true);
       setError(null);
-      await cotizacionesApi.descargarDocumento(cotizacion.id);
+      await cotizacionesApi.descargarDocumento(cotizacion.id, formato);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al descargar documento.');
     } finally {
@@ -343,7 +347,7 @@ const EventQuotePage: React.FC = () => {
       setCotizacion(cotizacionActualizada);
       await recargarHistorial();
       if (evento) setEvento(await eventosApi.obtenerPorId(evento.id));
-      toast.success('Cotizacion aceptada', 'El evento ya puede continuar al flujo de confirmacion.');
+      toast.success('Cotizacion aceptada', 'La version quedo aprobada. Ahora puedes confirmar el evento o registrar pagos.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al aceptar cotizacion';
       setError(message);
@@ -377,7 +381,7 @@ const EventQuotePage: React.FC = () => {
 
     return {
       id: evento.id,
-      title: `${tipoEvento?.nombre || 'Evento'} - ${cliente?.nombreCompleto || 'Cliente'}`,
+      title: `${capitalizeText(tipoEvento?.nombre) || 'Evento'} - ${capitalizeText(cliente?.nombreCompleto) || 'Cliente'}`,
       dateLabel: `Inicio: ${inicio.toLocaleString('es-CO', {
         day: '2-digit',
         month: 'long',
@@ -393,13 +397,13 @@ const EventQuotePage: React.FC = () => {
         minute: '2-digit',
       })}`,
       status: getEventDisplayStatus(evento),
-      customerName: cliente?.nombreCompleto || 'Cargando...',
+      customerName: capitalizeText(cliente?.nombreCompleto) || 'Cargando...',
       customerPhone: cliente?.telefono || '',
       createdBy: formatShortId(evento.usuarioCreadorId, 'USR-'),
       creatorId: evento.usuarioCreadorId,
-      eventType: tipoEvento?.nombre || 'Cargando...',
+      eventType: capitalizeText(tipoEvento?.nombre) || 'Cargando...',
       guests: reserva?.numInvitados || 0,
-      venue: salon?.nombre || 'Sin salon',
+      venue: capitalizeText(salon?.nombre) || 'Sin salon',
       venueCapacity: salon ? `Capacidad: ${salon.capacidad} pax` : '',
       totalQuote: formatCurrency(adjustedTotal),
     };
@@ -749,7 +753,7 @@ const EventQuotePage: React.FC = () => {
         <div className="hidden items-center gap-2 text-on-secondary-container lg:flex">
           <span className="material-symbols-outlined text-lg text-[#A8841C]">request_quote</span>
           <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
-            Ajusta precios, genera documento y envia la version al cliente
+            Ajusta precios, genera documento, envia y acepta cuando el cliente confirme
           </p>
         </div>
         <div className="flex w-full flex-wrap justify-end gap-3 lg:w-auto">
@@ -759,6 +763,7 @@ const EventQuotePage: React.FC = () => {
               type="button"
               onClick={handleGenerarCotizacion}
               disabled={isReadOnly || saving}
+              title="Genera el documento descargable de esta cotizacion."
             >
               Generar cotizacion
             </button>
@@ -768,18 +773,30 @@ const EventQuotePage: React.FC = () => {
               type="button"
               onClick={handleGenerarNuevaVersion}
               disabled={isReadOnly || saving || !reservaRaizId}
+              title={newVersionHelp}
             >
-              Nueva version
+              Nueva version por cambios
             </button>
           )}
 
           <button
             className="rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
-            onClick={handleDescargarDocumento}
+            onClick={() => handleDescargarDocumento('xlsx')}
             disabled={saving || cotizacion.estado === 'BORRADOR'}
+            title={cotizacion.estado === 'BORRADOR' ? 'Primero genera la cotizacion para descargar el Excel.' : 'Descargar reporte Excel estructurado.'}
           >
             Descargar Excel
+          </button>
+
+          <button
+            className="rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            onClick={() => handleDescargarDocumento('pdf')}
+            disabled={saving || cotizacion.estado === 'BORRADOR'}
+            title={cotizacion.estado === 'BORRADOR' ? 'Primero genera la cotizacion para descargar el PDF.' : 'Descargar cotizacion formal en PDF.'}
+          >
+            Descargar PDF
           </button>
 
           <button
@@ -787,6 +804,7 @@ const EventQuotePage: React.FC = () => {
             type="button"
             onClick={handleEnviarCotizacion}
             disabled={isReadOnly || saving || cotizacion.estado !== 'GENERADA'}
+            title={cotizacion.estado !== 'GENERADA' ? 'Solo una cotizacion generada puede marcarse como enviada.' : 'Marcar esta cotizacion como enviada al cliente.'}
           >
             Marcar enviada
           </button>
@@ -796,6 +814,7 @@ const EventQuotePage: React.FC = () => {
             type="button"
             onClick={handleEnviarEmail}
             disabled={isReadOnly || saving || !['GENERADA', 'ENVIADA', 'ACEPTADA'].includes(cotizacion.estado)}
+            title="Programa el envio por correo al cliente con PDF y Excel adjuntos."
           >
             Enviar email
           </button>
@@ -805,8 +824,9 @@ const EventQuotePage: React.FC = () => {
             type="button"
             onClick={handleAceptarCotizacion}
             disabled={isReadOnly || saving || !['GENERADA', 'ENVIADA'].includes(cotizacion.estado)}
+            title={acceptQuoteHelp}
           >
-            Aceptar
+            Aceptar cotizacion
           </button>
         </div>
       </footer>

@@ -39,7 +39,7 @@ interface AgendaEntry {
 
 const categoryLabel: Record<AgendaCategory, string> = {
   degustacion: 'Prueba de plato',
-  anticipo: 'Recordatorio anticipo',
+  anticipo: 'Recordatorio de anticipo',
 };
 
 const statusLabel: Record<AgendaStatus, string> = {
@@ -91,6 +91,16 @@ const formatDateTime = (value: string): string => {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
+};
+
+const toDatetimeLocalInputValue = (date: Date): string => {
+  const pad = (value: number) => value.toString().padStart(2, '0');
+
+  return [
+    date.getFullYear(),
+    pad(date.getMonth() + 1),
+    pad(date.getDate()),
+  ].join('-') + `T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 const sortByScheduledAt = (entries: AgendaEntry[]): AgendaEntry[] => {
@@ -310,6 +320,59 @@ const EventAgendaPage: React.FC = () => {
     () => eventosCalendar.filter((calendar) => calendar.estado === 'ERROR').length,
     [eventosCalendar]
   );
+  const currentDateInputMin = useMemo(() => toDatetimeLocalInputValue(new Date()), []);
+  const eventStartDate = useMemo(() => {
+    if (!evento?.fechaHoraInicio) {
+      return null;
+    }
+
+    const date = new Date(evento.fechaHoraInicio);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }, [evento?.fechaHoraInicio]);
+  const eventStartInputMax = useMemo(() => {
+    if (!eventStartDate) {
+      return undefined;
+    }
+
+    return toDatetimeLocalInputValue(new Date(eventStartDate.getTime() - 60_000));
+  }, [eventStartDate]);
+  const eventStartLabel = evento?.fechaHoraInicio ? formatDateTime(evento.fechaHoraInicio) : 'el inicio del evento';
+  const selectedScheduleDate = useMemo(() => {
+    if (!newScheduledAt) {
+      return null;
+    }
+
+    const date = new Date(newScheduledAt);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }, [newScheduledAt]);
+  const scheduleHelpText =
+    newCategory === 'degustacion'
+      ? `La prueba debe quedar en una fecha futura y antes de ${eventStartLabel}.`
+      : `El recordatorio debe quedar en una fecha futura, idealmente antes de ${eventStartLabel}.`;
+  const scheduleValidationMessage = useMemo(() => {
+    if (!newScheduledAt) {
+      return null;
+    }
+
+    if (!selectedScheduleDate) {
+      return 'Selecciona una fecha y hora valida.';
+    }
+
+    if (selectedScheduleDate.getTime() < Date.now()) {
+      return newCategory === 'degustacion'
+        ? 'La prueba de plato no puede programarse en una fecha pasada.'
+        : 'El recordatorio no puede programarse en una fecha pasada.';
+    }
+
+    if (newCategory === 'degustacion' && eventStartDate && selectedScheduleDate >= eventStartDate) {
+      return `La prueba de plato debe ser anterior al inicio del evento (${eventStartLabel}).`;
+    }
+
+    return null;
+  }, [eventStartDate, eventStartLabel, newCategory, newScheduledAt, selectedScheduleDate]);
+  const canCreateNotification = Boolean(
+    !isReadOnly && !saving && newMilestone.trim() && newScheduledAt && !scheduleValidationMessage
+  );
 
   const visibleEntries = useMemo(() => {
     const baseEntries =
@@ -336,6 +399,12 @@ const EventAgendaPage: React.FC = () => {
     }
 
     if (!newMilestone.trim() || !newScheduledAt) {
+      return;
+    }
+
+    if (scheduleValidationMessage) {
+      setError(scheduleValidationMessage);
+      toast.error('Fecha no valida', scheduleValidationMessage);
       return;
     }
 
@@ -461,6 +530,131 @@ const EventAgendaPage: React.FC = () => {
           <p className="text-3xl font-display font-bold text-primary-gold mt-1">{totalPending}</p>
         </div>
       </div>
+
+      <section className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-primary-gold font-bold">Nueva programacion</p>
+            <h4 className="text-2xl font-display font-bold text-on-surface mt-1">Crear notificacion o prueba de plato</h4>
+            <p className="text-sm text-on-surface-variant mt-1">
+              Ingresa primero los datos operativos y revisa abajo el estado de envios y sincronizaciones.
+            </p>
+          </div>
+          <div className="rounded-xl border border-outline-variant/30 bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
+            <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500">Regla de fecha</span>
+            <span>{scheduleHelpText}</span>
+          </div>
+        </div>
+
+        {isReadOnly ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            Este evento esta en modo solo lectura. El formulario queda bloqueado.
+          </div>
+        ) : null}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 mb-2">Tipo</label>
+            <select
+              className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
+              value={newCategory}
+              onChange={(eventTarget) => {
+                const nextCategory = eventTarget.target.value as AgendaCategory;
+                setNewCategory(nextCategory);
+                resetMilestoneByCategory(nextCategory);
+              }}
+              disabled={isReadOnly}
+            >
+              <option value="degustacion">Prueba de plato</option>
+              <option value="anticipo">Recordatorio de anticipo</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 mb-2">Hito</label>
+            <input
+              className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
+              type="text"
+              value={newMilestone}
+              maxLength={FORM_LIMITS.shortText}
+              onChange={(eventTarget) => setNewMilestone(limitText(eventTarget.target.value, FORM_LIMITS.shortText))}
+              disabled={isReadOnly}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 mb-2">Fecha y hora</label>
+            <input
+              className={`w-full bg-surface-container-low border rounded-md px-3 py-2.5 text-sm ${
+                scheduleValidationMessage ? 'border-red-300 text-red-700' : 'border-outline-variant/40'
+              }`}
+              type="datetime-local"
+              value={newScheduledAt}
+              min={currentDateInputMin}
+              max={newCategory === 'degustacion' ? eventStartInputMax : undefined}
+              onChange={(eventTarget) => setNewScheduledAt(eventTarget.target.value)}
+              disabled={isReadOnly}
+            />
+            <p className={`mt-2 text-xs font-semibold ${scheduleValidationMessage ? 'text-red-700' : 'text-on-surface-variant'}`}>
+              {scheduleValidationMessage || scheduleHelpText}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 mb-2">Canal</label>
+            <select
+              className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm disabled:opacity-70"
+              value={newCategory === 'degustacion' ? 'email' : newChannel}
+              onChange={(eventTarget) => setNewChannel(eventTarget.target.value as ReminderChannel)}
+              disabled={isReadOnly || newCategory === 'degustacion'}
+            >
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">Email</option>
+              <option value="llamada">Llamada</option>
+              <option value="interno">Interno</option>
+            </select>
+            {newCategory === 'degustacion' ? (
+              <p className="mt-2 text-xs font-semibold text-on-surface-variant">
+                La prueba de plato genera notificacion y sincronizacion de Calendar automaticamente.
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-neutral-700 mb-2">Notas</label>
+          <textarea
+            className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm min-h-[86px]"
+            value={newNotes}
+            maxLength={FORM_LIMITS.longText}
+            placeholder="Detalle opcional para el equipo..."
+            onChange={(eventTarget) => setNewNotes(limitText(eventTarget.target.value, FORM_LIMITS.longText))}
+            disabled={isReadOnly}
+          ></textarea>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs font-semibold text-on-surface-variant">
+            {newCategory === 'degustacion'
+              ? 'Se validara que la prueba sea futura y previa al evento.'
+              : 'Se creara un recordatorio de anticipo para la fecha seleccionada.'}
+          </p>
+          <button
+            type="button"
+            className="bg-[#191C1D] text-white px-6 py-3 rounded-md text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={!canCreateNotification}
+            onClick={createEntry}
+          >
+            {isReadOnly
+              ? event.status
+              : saving
+                ? 'Programando...'
+                : newCategory === 'degustacion'
+                  ? 'Programar prueba de plato'
+                  : 'Crear recordatorio'}
+          </button>
+        </div>
+      </section>
 
       <section className="rounded-2xl border border-stone-300 bg-[#fbf8f2] shadow-xl shadow-stone-900/5">
         <div className="border-b border-stone-200 px-6 py-5">
@@ -601,8 +795,7 @@ const EventAgendaPage: React.FC = () => {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-6">
-        <section className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
+      <section className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h4 className="text-2xl font-display font-bold text-on-surface">Notificaciones y recordatorios</h4>
@@ -667,93 +860,7 @@ const EventAgendaPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-        </section>
-
-        <aside className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
-          <h4 className="text-xl font-display font-bold text-on-surface">Nueva notificacion</h4>
-          {isReadOnly ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-              Este evento esta en modo solo lectura. El formulario queda bloqueado.
-            </div>
-          ) : null}
-
-          <div>
-            <label className="block text-xs font-bold text-neutral-700 mb-2">Tipo</label>
-            <select
-              className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
-              value={newCategory}
-              onChange={(eventTarget) => {
-                const nextCategory = eventTarget.target.value as AgendaCategory;
-                setNewCategory(nextCategory);
-                resetMilestoneByCategory(nextCategory);
-              }}
-              disabled={isReadOnly}
-            >
-              <option value="degustacion">Prueba de plato</option>
-              <option value="anticipo">Recordatorio de anticipo</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-neutral-700 mb-2">Hito</label>
-            <input
-              className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
-              type="text"
-              value={newMilestone}
-              maxLength={FORM_LIMITS.shortText}
-              onChange={(eventTarget) => setNewMilestone(limitText(eventTarget.target.value, FORM_LIMITS.shortText))}
-              disabled={isReadOnly}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-neutral-700 mb-2">Fecha y hora</label>
-            <input
-              className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
-              type="datetime-local"
-              value={newScheduledAt}
-              onChange={(eventTarget) => setNewScheduledAt(eventTarget.target.value)}
-              disabled={isReadOnly}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-neutral-700 mb-2">Canal</label>
-            <select
-              className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm"
-              value={newChannel}
-              onChange={(eventTarget) => setNewChannel(eventTarget.target.value as ReminderChannel)}
-              disabled={isReadOnly}
-            >
-              <option value="whatsapp">WhatsApp</option>
-              <option value="email">Email</option>
-              <option value="llamada">Llamada</option>
-              <option value="interno">Interno</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-neutral-700 mb-2">Notas</label>
-            <textarea
-              className="w-full bg-surface-container-low border border-outline-variant/40 rounded-md px-3 py-2.5 text-sm min-h-[86px]"
-              value={newNotes}
-              maxLength={FORM_LIMITS.longText}
-              placeholder="Detalle opcional para el equipo..."
-              onChange={(eventTarget) => setNewNotes(limitText(eventTarget.target.value, FORM_LIMITS.longText))}
-              disabled={isReadOnly}
-            ></textarea>
-          </div>
-
-          <button
-            type="button"
-            className="w-full bg-[#191C1D] text-white px-6 py-3 rounded-md text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            disabled={isReadOnly || saving || !newMilestone.trim() || !newScheduledAt}
-            onClick={createEntry}
-          >
-            {isReadOnly ? event.status : saving ? 'Programando...' : 'Programar notificacion'}
-          </button>
-        </aside>
-      </div>
+      </section>
     </section>
   );
 };
