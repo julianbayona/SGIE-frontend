@@ -60,6 +60,9 @@ apiClient.interceptors.response.use(
     else if (status === 403) {
       message = 'No tienes permisos para realizar esta acción.';
     }
+    else if (status === 429) {
+      message = data?.message ?? 'Demasiadas solicitudes. Espera un momento e intenta de nuevo.';
+    }
     // El backend devuelve { "mensaje": "...", "timestamp": "..." }
     else if (data?.mensaje) {
       message = data.mensaje;

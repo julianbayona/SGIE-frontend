@@ -135,7 +135,29 @@ Archivos principales:
 - `SGIE-frontend/src/api/cotizaciones.ts`
 - `SGIE-frontend/src/pages/EventQuotePage.tsx`
 
-## 7. Validacion realizada
+## 7. Seguridad backend y documentos
+
+Se aplico una primera fase de endurecimiento sobre autenticacion, limites de consumo y documentos de cotizacion.
+
+Cambios realizados:
+
+- El JWT manual fue reemplazado por `jjwt`, manteniendo los mismos claims de usuario y rol.
+- La configuracion JWT ahora usa propiedades tipadas y valida que el secreto tenga longitud minima para HS256.
+- Se agrego rate limiting en memoria para `/api/**`, con limites separados para login y llamadas generales.
+- El frontend reconoce respuestas HTTP `429` y muestra un mensaje claro al usuario.
+- Se auditaron `.env.example` y `.env.local`; solo exponen `VITE_API_BASE_URL`.
+- El texto usado en celdas XLS se sanitiza para evitar formulas inyectadas y caracteres XML invalidos.
+- El escritor PDF se separo a una clase propia para reducir responsabilidad del servicio de cotizaciones.
+
+Archivos principales:
+
+- `SGIE-CB/src/main/java/com/ejemplo/monolitomodular/auth/infraestructura/seguridad/JwtService.java`
+- `SGIE-CB/src/main/java/com/ejemplo/monolitomodular/auth/infraestructura/seguridad/JwtProperties.java`
+- `SGIE-CB/src/main/java/com/ejemplo/monolitomodular/auth/infraestructura/seguridad/RateLimitingFilter.java`
+- `SGIE-CB/src/main/java/com/ejemplo/monolitomodular/cotizaciones/aplicacion/servicio/PdfWriter.java`
+- `SGIE-frontend/src/api/client.ts`
+
+## 8. Validacion realizada
 
 Frontend:
 
@@ -155,7 +177,7 @@ Backend:
 - La semilla fue ejecutada correctamente contra el contenedor local `sgie-postgres`.
 - Se confirmo que el script es idempotente para los registros definidos.
 
-## 8. Cambios descartados
+## 9. Cambios descartados
 
 Estos cambios se probaron o avanzaron parcialmente, pero fueron descartados y no forman parte del estado vigente:
 
@@ -165,7 +187,7 @@ Estos cambios se probaron o avanzaron parcialmente, pero fueron descartados y no
 - Migracion `V12__agregar_comprobante_anticipo.sql`.
 - Cambio para evitar falso positivo de email enviado cuando SMTP esta deshabilitado.
 
-## 9. Como probar en local
+## 10. Como probar en local
 
 Backend:
 
