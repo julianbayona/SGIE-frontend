@@ -91,15 +91,16 @@ const cotizacionesApi = {
       .then((r) => r.data);
   },
 
-  /** Descarga el Excel generado en backend. */
-  async descargarDocumento(id: string): Promise<void> {
-    const response = await apiClient.get<Blob>(`/cotizaciones/${id}/documento`, {
+  /** Descarga el documento generado en backend. */
+  async descargarDocumento(id: string, formato: 'xlsx' | 'pdf' = 'xlsx'): Promise<void> {
+    const path = formato === 'pdf' ? `/cotizaciones/${id}/documento/pdf` : `/cotizaciones/${id}/documento`;
+    const response = await apiClient.get<Blob>(path, {
       responseType: 'blob',
     });
     const blobUrl = window.URL.createObjectURL(response.data);
     const link = document.createElement('a');
     link.href = blobUrl;
-    link.download = `cotizacion-${id}.xlsx`;
+    link.download = `cotizacion-${id}.${formato}`;
     document.body.appendChild(link);
     link.click();
     link.remove();

@@ -319,13 +319,13 @@ const EventQuotePage: React.FC = () => {
     }
   };
 
-  const handleDescargarDocumento = async () => {
+  const handleDescargarDocumento = async (formato: 'xlsx' | 'pdf' = 'xlsx') => {
     if (!cotizacion) return;
 
     try {
       setSaving(true);
       setError(null);
-      await cotizacionesApi.descargarDocumento(cotizacion.id);
+      await cotizacionesApi.descargarDocumento(cotizacion.id, formato);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al descargar documento.');
     } finally {
@@ -782,11 +782,21 @@ const EventQuotePage: React.FC = () => {
           <button
             className="rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
-            onClick={handleDescargarDocumento}
+            onClick={() => handleDescargarDocumento('xlsx')}
             disabled={saving || cotizacion.estado === 'BORRADOR'}
-            title={cotizacion.estado === 'BORRADOR' ? 'Primero genera la cotizacion para descargar el Excel.' : 'Descargar documento Excel.'}
+            title={cotizacion.estado === 'BORRADOR' ? 'Primero genera la cotizacion para descargar el Excel.' : 'Descargar reporte Excel estructurado.'}
           >
             Descargar Excel
+          </button>
+
+          <button
+            className="rounded-md border border-outline-variant px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            onClick={() => handleDescargarDocumento('pdf')}
+            disabled={saving || cotizacion.estado === 'BORRADOR'}
+            title={cotizacion.estado === 'BORRADOR' ? 'Primero genera la cotizacion para descargar el PDF.' : 'Descargar cotizacion formal en PDF.'}
+          >
+            Descargar PDF
           </button>
 
           <button
@@ -804,7 +814,7 @@ const EventQuotePage: React.FC = () => {
             type="button"
             onClick={handleEnviarEmail}
             disabled={isReadOnly || saving || !['GENERADA', 'ENVIADA', 'ACEPTADA'].includes(cotizacion.estado)}
-            title="Programa el envio por correo al cliente con el documento adjunto."
+            title="Programa el envio por correo al cliente con PDF y Excel adjuntos."
           >
             Enviar email
           </button>

@@ -114,7 +114,28 @@ Archivo principal:
 
 - `SGIE-frontend/src/pages/EventAgendaPage.tsx`
 
-## 6. Validacion realizada
+## 6. Cotizacion PDF y reporte XLS
+
+Se mejoro el envio y descarga de cotizaciones para contemplar PDF y un Excel mas legible.
+
+Cambios realizados:
+
+- Se agrego descarga de cotizacion en PDF desde backend.
+- El email de cotizacion ahora adjunta PDF y Excel.
+- El texto del email aclara que se envian ambos formatos.
+- La pantalla de cotizacion tiene botones separados para `Descargar Excel` y `Descargar PDF`.
+- El XLS ahora separa datos del cliente, evento, resumen financiero y detalle economico.
+- El detalle del XLS incluye origen, concepto, modalidad de cobro, descripcion, precios, cantidad y subtotal.
+
+Archivos principales:
+
+- `SGIE-CB/src/main/java/com/ejemplo/monolitomodular/cotizaciones/aplicacion/servicio/CotizacionOperacionApplicationService.java`
+- `SGIE-CB/src/main/java/com/ejemplo/monolitomodular/cotizaciones/presentacion/rest/CotizacionController.java`
+- `SGIE-CB/src/main/java/com/ejemplo/monolitomodular/cotizaciones/infraestructura/notificaciones/CotizacionEmailAttachmentProvider.java`
+- `SGIE-frontend/src/api/cotizaciones.ts`
+- `SGIE-frontend/src/pages/EventQuotePage.tsx`
+
+## 7. Validacion realizada
 
 Frontend:
 
@@ -130,10 +151,11 @@ Resultado:
 
 Backend:
 
+- `mvn.cmd test` ejecutado correctamente.
 - La semilla fue ejecutada correctamente contra el contenedor local `sgie-postgres`.
 - Se confirmo que el script es idempotente para los registros definidos.
 
-## 7. Cambios descartados
+## 8. Cambios descartados
 
 Estos cambios se probaron o avanzaron parcialmente, pero fueron descartados y no forman parte del estado vigente:
 
@@ -143,7 +165,7 @@ Estos cambios se probaron o avanzaron parcialmente, pero fueron descartados y no
 - Migracion `V12__agregar_comprobante_anticipo.sql`.
 - Cambio para evitar falso positivo de email enviado cuando SMTP esta deshabilitado.
 
-## 8. Como probar en local
+## 9. Como probar en local
 
 Backend:
 
